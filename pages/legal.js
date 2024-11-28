@@ -11,6 +11,7 @@ import { NextSeo } from 'next-seo'
 import { SmoothScrollProvider } from '../contexts/SmoothScroll.context'
 import LegalTabs from '../components/legal-tabs'
 import { PopupContext } from '../contexts/popup'
+import { useRouter } from 'next/router'
 
 const query = `{
   "legal": *[_type == "legal"] {
@@ -54,6 +55,8 @@ const pageService = new SanityPageService(query)
 export default function Legal(initialData) {
   const { data: { legal, contact, popup }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
+  const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
     setPopupContext([{
@@ -70,7 +73,13 @@ export default function Legal(initialData) {
 
   return (
     <Layout>
-      <NextSeo title="Legal" />
+      <NextSeo
+        title="Legal"
+        canonical={canonicalUrl}
+        openGraph={{
+          url: canonicalUrl,
+        }}
+      />
 
       <motion.div
         initial="initial"

@@ -7,12 +7,20 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import ImageStandard from '../helpers/image-standard'
+import { useRouter } from 'next/router'
 
 export default function Contact() {
+  const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
+
   return (
     <Layout>
       <NextSeo
         title="Contact"
+        canonical={canonicalUrl}
+        openGraph={{
+          url: canonicalUrl,
+        }}
       />
 
       <motion.div

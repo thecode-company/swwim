@@ -14,6 +14,7 @@ import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
 import ImageStandard from '../../helpers/image-standard'
 import { PopupContext } from '../../contexts/popup'
 import { useContext, useEffect } from 'react'
+import { useRouter } from 'next/router'
 
 const query = `{
   "services": *[_type == "service"] | order(order asc) {
@@ -64,6 +65,8 @@ const pageService = new SanityPageService(query)
 export default function ServicesLandingPage(initialData) {
   const { data: { services, contact, popup}  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
+  const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
     setPopupContext([{
@@ -80,8 +83,13 @@ export default function ServicesLandingPage(initialData) {
   return (
     <Layout>
       <NextSeo
-        title="Case Studies"
+        title="Services"
+        canonical={canonicalUrl}
+        openGraph={{
+          url: canonicalUrl,
+        }}
       />
+
 
       <motion.div
         initial="initial"

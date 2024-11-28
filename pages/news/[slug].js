@@ -16,6 +16,7 @@ import EditorialContentWrapper from '../../components/editorial-content-wrapper'
 import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
 import { PopupContext } from '../../contexts/popup'
 import { useContext, useEffect } from 'react'
+import { useRouter } from 'next/router'
 
 const readingTime = require('reading-time');
 
@@ -126,6 +127,8 @@ const pageService = new SanityPageService(query)
 
 export default function NewsSlug(initialData) {
   const { data: { seo, heroImage, categories, author, date, introText, title, content, contact, moreNews, popup, slug }  } = pageService.getPreviewHook(initialData)()
+  const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   let d = spacetime(date)
   let estimatedReadingTime = readingTime(toPlainText(content));
@@ -150,8 +153,9 @@ export default function NewsSlug(initialData) {
       <NextSeo
         title={seo?.metaTitle ? seo?.metaTitle : title }
         description={seo?.metaDesc ? seo?.metaDesc : introText}
+        canonical={canonicalUrl}
         openGraph={{
-          url: `https://www.weswwim.com/news/${slug}`,
+          url: canonicalUrl,
           images: [
             {
               url: seo?.shareGraphic?.asset.url ?? null,

@@ -24,6 +24,7 @@ import LottieAnimation from '../components/lottie-animations'
 import ImageStandard from '../helpers/image-standard';
 import { PopupContext } from '../contexts/popup'
 import ConditionalWrap from 'conditional-wrap';
+import { useRouter } from 'next/router';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -147,6 +148,8 @@ const pageService = new SanityPageService(query)
 export default function Home(initialData) {
   const { data: { home, services, clients, news, contact, popup }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
+  const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
     setPopupContext([{
@@ -253,7 +256,9 @@ export default function Home(initialData) {
       <NextSeo
         title={home.seo?.metaTitle ? home.seo.metaTitle : home.title}
         description={home.seo?.metaDesc ? home.seo.metaDesc : null}
+        canonical={canonicalUrl}
         openGraph={{
+          url: canonicalUrl,
           description: home.seo?.metaDesc ? home.seo.metaDesc : null,
           images: [
             {
@@ -599,251 +604,44 @@ export default function Home(initialData) {
         className="bg-white bg-noise bg-noise--white text-blue py-10 md:py-16 2xl:py-20 overflow-hidden relative z-10"
       >
         <Container>
-          <motion.div variants={fadeDelay} className="relative z-10">
-            <div className="w-[24%] md:w-[20%] absolute top-0 right-0 mr-[-14%] md:mr-[-10%] 2xl:mr-[-9%] mt-[1%] z-0 animate--float" ref={fadeRevealRefs}>
-              <ImageStandard width={278} height={276} layout="responsive" src="/icons/plant-2.svg" alt="Plant Illustration" className="w-full will-change" />
-            </div>
+          <motion.div variants={fadeDelay} className="relative z-10 pt-10 md:pt-16 2xl:pt-20">
+            <Container>
 
-            <div className="w-[65%] md:w-[40%] 2xl:w-[35%] absolute top-0 left-0 ml-[-32%] md:ml-[-18%] 2xl:ml-[-13%] mt-[50%] md:mt-[25%] xl:mt-[20%] z-0 animate--float" ref={fadeRevealRefs}>
-              <ImageStandard width={551} height={555} layout="responsive" src="/icons/plant-3.svg" alt="Plant Illustration" className="w-full will-change" />
-            </div>
-            
-            <div className="inline-block mb-8 md:mb-16 2xl:mb-24 relative z-10">
-              <span className="text-base font-display uppercase flex mb-1 md:mb-2">
-                <span className="block mx-px animate--letter-float--delay">W</span>
-                <span className="block mx-px animate--letter-float">h</span>
-                <span className="block mx-px animate--letter-float--delay">a</span>
-                <span className="block mx-px animate--letter-float">t</span>
-                <span className="block mx-px animate--letter-float--delay">&nbsp;</span>
-                <span className="block mx-px animate--letter-float">w</span>
-                <span className="block mx-px animate--letter-float--delay">e</span>
-                <span className="block mx-px animate--letter-float">&nbsp;</span>
-                <span className="block mx-px animate--letter-float--delay">O</span>
-                <span className="block mx-px animate--letter-float">f</span>
-                <span className="block mx-px animate--letter-float--delay">f</span>
-                <span className="block mx-px animate--letter-float">e</span>
-                <span className="block mx-px animate--letter-float--delay">r</span>
-              </span>
-              <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-display uppercase mb-0 pb-0">Our Services</h2>
-              
-              <div className="w-full -mt-1 md:-mt-2 " ref={fadeRevealRefs}>
-                <ImageStandard width={400} height={34} layout="responsive" src="/icons/services-underline.svg" alt="Swipe Underline" className="w-full will-change" />
+              <div className="flex flex-wrap items-center mb-3 md:mb-5 relative z-10">
+                <div className="w-auto">
+                  <span className="text-base font-display uppercase mb-1 md:mb-2 flex">
+                    <span className="block mx-px animate--letter-float animate--letter-float--delay">N</span>
+                    <span className="block mx-px animate--letter-float">e</span>
+                    <span className="block mx-px animate--letter-float animate--letter-float--delay">w</span>
+                    <span className="block mx-px animate--letter-float">s</span>
+                  </span>
+                  <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-display uppercase mb-0 pb-0">Latest<span className="block">Poolside</span></h2>
+                </div>
+                <div className="ml-auto w-auto">
+                  <FancyLink href="/news" label="View all news" />
+                </div>
               </div>
-            </div>
-
-            <div className="relative z-10">
-              {services.map((service, i) => {
+              
+              {news.map((article, i) => {
                 return (
-                  <div className={`border-b border-blue w-full ${ i == 0 ? 'border-t' : ''}`} key={i}>
-                    <Link href={`/services/${service.slug.current}`}>
-                      <a className="block w-full text-left focus:outline-none focus:border-none wiggle-on-hover-container group p-0 m-0">
-                      <div className="py-6 md:py-10 2xl:py-12 cursor-pointer ring-blue">
-                        <div className="flex flex-wrap items-center">
-                          <span className="block stroke stroke--thin text-2xl md:text-3xl font-bold mt-0 md:-mt-1 md:w-1/3 pr-2 ">{`0${i + 1}`}</span>
-                          <div className="flex-1 md:w-2/3 ml-auto ">
-                            <div className="flex flex-wrap items-center -mx-3">
-                              { service.icon && (
-                                <div className="w-6 md:w-10 xl:w-14 ml-5 md:ml-0 mr-1 md:mr-3 xl:mr-5 wiggle-on-hover__item">
-                                  <ImageStandard
-                                    src={service.icon.asset.url}
-                                    width={service.icon.asset.metadata.dimensions.width}
-                                    height={service.icon.asset.metadata.dimensions.height}
-                                    alt={`${service.title} Icon`}
-                                    className="w-full"
-                                    layout="responsive"
-                                  />
-                                </div>
-                              )}
-
-                              <span className="block text-xl md:text-4xl 2xl:text-5xl font-display uppercase leading-tight mb-0 pb-0 px-3 flex-1 mt-[6px] md:mt-0 group-hover:opacity-50 transition-opacity ease-in-out duration-500 ">{service.title}</span>
-                              <div className="px-3 ml-auto">
-                                <span className={` rounded-full relative overflow-hidden transform -rotate-90 ml-auto scale-[0.75] md:scale-100 md:group-hover:scale-125 transition-transform  ease-in-out duration-500 mr-1 block`}>
-                                  <span className={`block transition-colors ease-in-out duration-500 bg-blue text-white group-hover:text-white`}>
-                                    <span className={`block text-white group-hover:text-white`}>
-                                    <svg className="absolute top-0 left-0 -translate-y-12 group-hover:translate-y-0 transition ease-in-out duration-500 w-8 transform rotate-180 z-10" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 16.57l-6.188-6.232-6.188 6.231M17.812 10.338V25" stroke="currentColor" strokeWidth="1.008"/></svg>
-
-                                    <svg className="group-hover:translate-y-12 transition ease-in-out duration-500 w-8 relative z-10 transform rotate-180" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 16.57l-6.188-6.232-6.188 6.231M17.812 10.338V25" stroke="currentColor" strokeWidth="1.008"/></svg>
-
-                                    <span className="absolute inset-0 flex flex-wrap z-1 items-center justify-center">
-                                      <span className="w-0 h-0 rounded-full bg-blue-dark group-hover:w-full group-hover:h-full transition-all ease-in-out duration-500 opacity-0 group-hover:opacity-100 transform scale-110"></span>
-                                    </span>
-                                    </span>
-                                  </span>
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      </a>
-                    </Link>
-                  </div>
+                  <NewsTeaser
+                    key={i}
+                    image={article.heroImage.asset}
+                    href={`/news/${article.slug.current}`}
+                    ref={fadeRevealRefs}
+                    theme="blue"
+                    heading={article.title}
+                    category={article.categories ? article.categories[0].title : null}
+                    date={article.date ?? null}
+                    author={article.author ?? null}
+                    noBorder={i === news.length - 1}
+                    content={article.content}
+                  />
                 )
               })}
-            </div>
+            </Container>
           </motion.div>
         </Container>
-
-        <Container>
-          <motion.div variants={fadeDelay} className="relative z-10 overflow-visible">
-            <div className="relative overflow-visible pt-24 md:pt-40 2xl:pt-48">
-              <div className="text-center mb-6 md:mb-12 relative z-10">
-                <span className="text-base font-display uppercase mb-1 md:mb-2 flex flex-wrap justify-center">
-                  <span className="block mx-px animate--letter-float--delay">C</span>
-                  <span className="block mx-px animate--letter-float">l</span>
-                  <span className="block mx-px animate--letter-float--delay">i</span>
-                  <span className="block mx-px animate--letter-float">e</span>
-                  <span className="block mx-px animate--letter-float--delay">n</span>
-                  <span className="block mx-px animate--letter-float">t</span>
-                  <span className="block mx-px animate--letter-float--delay">s</span>
-                </span>
-
-                <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-display uppercase mb-0 pb-0">Working With The Best</h2>
-              </div>
-
-              <div className="w-[80%] md:w-[60%] 2xl:w-[45%] absolute top-0 md:bottom-0 left-0 ml-[-28%] md:ml-[-20%] md:mt-[0] z-0 animate--float" ref={fadeRevealRefs}>
-                <ImageStandard width={775} height={1092} layout="responsive" src="/icons/palm-tree.svg" alt="Plant Illustration" className="w-full will-change" />
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 border-r border-b border-blue mb-16 md:mb-24 2xl:mb-32 relative z-20">
-                {clients.map((client, i) => {
-                  return (
-                    <ConditionalWrap
-                      condition={client.externalWebsite}
-                      wrap={children => (
-                        <a href={client.externalWebsite} target="_blank" rel="noopener noreferrer" className="group">
-                          {children}
-                        </a>
-                      )}
-                    >
-                      <ConditionalWrap
-                        condition={client.internalCaseStudy}
-                        wrap={children => (
-                          <Link href={`/case-studies/${client.internalCaseStudy.slug.current}`}>
-                            <a className="block group">
-                              {children}
-                            </a>
-                          </Link>
-                        )}
-                      >
-                        <div className="bg-white border-l border-t border-blue flex flex-wrap items-center justify-center p-[10vw] md:p-[3.35rem] lg:p-[5.25rem] client-logo" key={i}>
-                          <div ref={fadeRevealRefs} className="">
-                            <ImageStandard
-                              src={client.logo.asset.url}
-                              width={client.logo.asset.metadata.dimensions.width}
-                              height={client.logo.asset.metadata.dimensions.height}
-                              alt={client.title}
-                              className="h-16 max-w-[50%] lg:h-24 lg:max-w-[60%] will-change transform group-hover:scale-[0.9] transition-transform ease-in-out duration-500"
-                            />
-                          </div>
-                        </div>
-                      </ConditionalWrap>
-                    </ConditionalWrap>
-                  )
-                })}
-              </div>
-            </div>
-            
-            <div className="relative md:mx-16 2xl:mx-20 mb-5 md:mb-16 2xl:mb-20">
-              <svg ref={fadeRevealRefs} className="w-1/2 md:w-4/12 absolute top-0 right-0 mt-[4%] mr-[16%] md:mr-[23%] md:mt-[7%] 2xl:mt-[6%] 2xl:mr-[25%] z-0 " viewBox="0 0 447 258" fill="none" xmlns="http://www.w3.org/2000/svg"><g opacity=".447"><mask id="squiggleMaskA" maskUnits="userSpaceOnUse" x="0" y="0" width="447" height="258"><path fillRule="evenodd" clipRule="evenodd" d="M0 0h447v258H0V0z" fill="#fff"/></mask><g mask="url(#squiggleMaskA)"><path fillRule="evenodd" clipRule="evenodd" d="M53.828 230.687c-10.89-6.159-20.862-14.418-28.037-24.655-7.078-10.098-11.515-22.131-12.372-34.027a73.814 73.814 0 01-.172-5.233c9.767 16.713 23.923 31.084 39.348 42.517 24.188 17.925 53.103 29.06 82.627 34.699 3.62.69 7.25 1.3 10.891 1.849-1.72.121-3.441.232-5.166.321-29.476 1.522-60.958-.681-87.12-15.471zm-38.8-130.357c8.148-23.03 29.039-40.3 50.082-52.253 26.129-14.84 55.343-24.157 84.81-29.832 30.327-5.84 61.61-8.004 92.464-6.43 28.104 1.435 56.265 6.358 82.558 16.506 18.94 7.308 39.338 18.807 49.708 36.502 2.744 4.677 4.25 8.368 5.542 13.817 1.383 5.82 1.63 11.91.998 18.431-1.378 14.208-7.725 27.581-15.776 39.23-15.112 21.862-35.783 39.678-58.002 54.179-23.274 15.193-48.672 27.354-74.877 36.695-11.839 4.219-23.909 7.839-36.142 10.782-2.137.004-4.274.027-6.412-.003-31.201-.445-62.576-4.828-91.691-16.335-25.07-9.908-48.21-25.476-65.286-46.312-7.17-8.746-13.125-18.779-16.934-29.416 3.937-14.63 11.717-28.368 21.676-39.878 17.88-20.659 42.67-33.85 68.918-41.476 30.031-8.724 61.589-10.138 92.695-8.841 16.243.678 32.443 2.126 48.609 3.817 3.082.323 5.725-2.836 5.725-5.672 0-3.334-2.636-5.348-5.725-5.671-34.274-3.582-68.954-6.115-103.336-2.416-30.385 3.269-60.75 11.556-86.644 28.061-19.82 12.636-36.243 30.36-46.323 51.436-.536-8.297.453-16.694 3.363-24.921zm431.207 63.482c-1.465-2.48-5.29-3.8-7.835-2.034a429.465 429.465 0 01-77.083 42.449c-26.732 11.329-54.754 19.834-83.242 25.549a423.547 423.547 0 01-34.641 5.446 404.608 404.608 0 0033.575-14.547c25.653-12.51 50.162-27.985 71.071-47.409 21.628-20.095 41.423-45.688 44.52-75.785 1.307-12.71-1.046-25.588-7.191-36.847-5.545-10.158-13.889-18.415-23.165-25.264-19.627-14.492-44.136-22.736-67.791-28.016C262.398.201 229.157-1.277 196.445.967c-31.951 2.19-63.885 7.67-94.157 18.2C74.9 28.695 47.45 41.937 26.751 62.543 17.217 72.03 9.38 83.129 4.585 95.687c-5.194 13.611-5.805 28.477-2.692 42.638.61 2.789 1.395 5.52 2.26 8.22-5.062 22.418-1.606 46.334 11.959 65.51 17.163 24.263 45.16 37.95 74.085 42.916 32.283 5.541 66.037 2.964 97.969-3.56 3.065-.625 6.115-1.329 9.159-2.039 11.665-.057 23.323-.637 34.901-1.649 30.533-2.667 60.794-8.471 90.096-17.384 29.268-8.904 57.66-20.834 84.426-35.562a427.403 427.403 0 0037.434-23.205c2.528-1.754 3.704-4.962 2.053-7.76z" fill="#EEE1D9"/></g></g></svg>
-              
-                <div className="w-[32%] md:w-[30%] lg:w-[20%] absolute top-0 left-0 ml-[-16%] md:ml-[-24%]  lg:ml-[-16%] 2xl:ml-[-9%] mt-[-8%] md:mt-[10%] z-0 transform rotate-45" ref={fadeRevealRefs}>
-                  <div className="animate--float">
-                    <ImageStandard width={278} height={276} layout="responsive" src="/icons/plant-2.svg" alt="Plant Illustration" className="w-full transform rotate-90 will-change" />
-                  </div>
-                </div>
-                
-                <div className="w-[65%] md:w-[65%] lg:w-[50%] 2xl:w-[45%] absolute top-0 right-0 mr-[-30%] md:mr-[-32%] lg:mr-[-22%] 2xl:mr-[-25%] mt-[-35%] md:mt-[-35%] lg:mt-[-25%] xl:mt-[-25%] z-0 transform rotate-6" ref={fadeRevealRefs}>
-                  <div className="animate--float">
-                    <ImageStandard width={551} height={555} layout="responsive" src="/icons/plant-3.svg" alt="Plant Illustration" className="w-full transform -rotate-90 will-change" />
-                  </div>
-                </div>
-
-              <span className="font-display uppercase text-[11.5vw] md:text-[7.7vw] 2xl:text-[125px] leading-none relative z-10 flex items-center">
-                <span className="block">
-                  “The agency
-                </span>
-                <div className="w-[13%] xl:w-[12%] mr-l md:ml-[2%] 2xl:ml-[4%] xl:mb-[-2%] hidden md:block" ref={fadeRevealRefs}>
-                  <div className="animate--float">
-                    <ImageStandard width={193} height={82} layout="responsive" src="/icons/sunglasses.svg" alt="Sunglasses Illustration" className="w-full will-change" />
-                  </div>
-                </div>
-              </span>
-
-              <span className="md:text-right font-display uppercase text-[11.5vw] md:text-[7.7vw] 2xl:text-[125px] leading-none relative z-10 flex items-center justify-end">
-                <div className="w-[13%] mr-3 md:mr-[0%] 2xl:mr-2 hidden md:block" ref={fadeRevealRefs}>
-                  <div className="animate--float">
-                    <ImageStandard width={130} height={115} layout="responsive" src="/icons/speech-bubbles.svg" alt="Speech Bubble Illustration" className="w-full will-change" />
-                  </div>
-                </div>
-                <span className="block">
-                  That truly feels
-                </span>
-              </span>
-              <span className="block font-display uppercase text-[11.5vw] md:text-[7.7vw] 2xl:text-[125px] leading-none relative z-10">Like a part of</span>
-              <span className="block font-display uppercase text-[11.5vw] md:text-[7.7vw] 2xl:text-[125px] leading-none relative z-10">our team”</span>
-
-              {/* <div className="absolute bottom-0 right-0 w-[12%] md:mr-[12%] xl:mr-[5%] md:mb-[5%] xl:mb-[-3%] 2xl:mb-[0%] 2xl:mr-[12%] hidden md:block animate--float" ref={fadeRevealRefs}>
-                <ImageStandard width={133} height={202} layout="responsive" src="/icons/bottle-coloured.svg" alt="Bottle Illustration" className="w-full will-change" />
-              </div> */}
-              
-              <div className="flex flex-wrap items-center xl:absolute bottom-0 left-0 mt-4 xl:mt-0 xl:ml-[53%] 2xl:ml-[56%] xl:mb-[2.3%]">
-                <div className="w-12 md:w-16 h-12 md:h-16 rounded-full border-blue border-2" ref={fadeRevealRefs}>
-                  <ImageStandard width={320} height={320} layout="responsive" src="/images/laura.png" alt="Laura" className="w-full rounded-full will-change" />
-                </div>
-
-                <div className="ml-3 md:ml-5 pl-3 md:pl-5 border-l-2 border-blue flex-1">
-                  <span className="block md:text-lg leading-snug"><span className="font-bold">Laura Farrand</span>, Head of PR</span>
-                  <span className="block leading-snug text-sm md:text-base">Givenchy Perfumes</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </Container>
-      </motion.section>
-
-      <motion.section
-        initial="initial"
-        animate="enter"
-        exit="exit"
-        className="bg-blue bg-noise text-white"
-      >
-        <motion.div variants={fadeDelay} className="relative z-10 pt-10 md:pt-16 2xl:pt-20">
-          <Container>
-
-            <div className="flex flex-wrap items-center mb-3 md:mb-5 relative z-10">
-              <div className="w-auto">
-                <span className="text-base font-display uppercase mb-1 md:mb-2 flex">
-                  <span className="block mx-px animate--letter-float animate--letter-float--delay">N</span>
-                  <span className="block mx-px animate--letter-float">e</span>
-                  <span className="block mx-px animate--letter-float animate--letter-float--delay">w</span>
-                  <span className="block mx-px animate--letter-float">s</span>
-                </span>
-                <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-display uppercase mb-0 pb-0">Latest<span className="block">Poolside</span></h2>
-              </div>
-              <div className="ml-auto w-auto">
-                <FancyLink href="/news" label="View all news" />
-              </div>
-            </div>
-            
-            {news.map((article, i) => {
-              return (
-                <NewsTeaser
-                  key={i}
-                  image={article.heroImage.asset}
-                  href={`/news/${article.slug.current}`}
-                  ref={fadeRevealRefs}
-                  theme="blue"
-                  heading={article.title}
-                  category={article.categories ? article.categories[0].title : null}
-                  date={article.date ?? null}
-                  author={article.author ?? null}
-                  noBorder={i === news.length - 1}
-                  content={article.content}
-                />
-              )
-            })}
-          </Container>
-        </motion.div>
 
         <motion.div variants={fadeDelay} className="relative z-10">
           <Footer contact={contact} />

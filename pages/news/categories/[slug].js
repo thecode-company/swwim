@@ -111,6 +111,7 @@ export default function NewsCatSlug(initialData) {
   }, [])
 
   const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   const handleChange = event => {
     if (event.target.value == 'all') {
@@ -123,6 +124,10 @@ export default function NewsCatSlug(initialData) {
     <Layout>
       <NextSeo
         title="Latest Poolside"
+        canonical={canonicalUrl}
+        openGraph={{
+          url: canonicalUrl,
+        }}
       />
 
       <motion.div

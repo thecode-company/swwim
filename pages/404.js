@@ -12,6 +12,7 @@ import Image from 'next/image'
 import ImageStandard from '../helpers/image-standard'
 import { PopupContext } from '../contexts/popup'
 import { useContext, useEffect } from 'react'
+import { useRouter } from 'next/router'
 
 const query = `{
   "contact": *[_type == "contact"][0] {
@@ -51,6 +52,8 @@ const pageService = new SanityPageService(query)
 export default function CustomError(initialData) {
   const { data: {  contact, popup }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
+  const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
     setPopupContext([{
@@ -67,7 +70,13 @@ export default function CustomError(initialData) {
 
   return (
     <Layout>
-      <NextSeo title="404 Page Not Found" />
+      <NextSeo
+        title="404 Page Not Found"
+        canonical={canonicalUrl}
+        openGraph={{
+          url: canonicalUrl,
+        }}
+      />
 
       <motion.div
         initial="initial"

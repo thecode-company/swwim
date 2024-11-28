@@ -15,6 +15,7 @@ import GuidesContentWrapper from '../../components/guides-content-wrapper'
 import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
 import { useContext, useEffect } from 'react'
 import { PopupContext } from '../../contexts/popup'
+import { useRouter } from 'next/router'
 
 const readingTime = require('reading-time');
 
@@ -88,6 +89,8 @@ const pageService = new SanityPageService(query)
 
 export default function NewsSlug(initialData) {
   const { data: { seo, heroImage, date, location, time, introText, title, content, newsletterSignupHeading, newsletterSignupText, contact, popup }  } = pageService.getPreviewHook(initialData)()
+  const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   const [popupContext, setPopupContext] = useContext(PopupContext);
 
@@ -112,7 +115,9 @@ export default function NewsSlug(initialData) {
       <NextSeo
         title={seo?.metaTitle ? seo?.metaTitle : title }
         description={seo?.metaDesc ? seo?.metaDesc : introText}
+        canonical={canonicalUrl}
         openGraph={{
+          url: canonicalUrl,
           images: [
             {
               url: seo?.shareGraphic?.asset.url ?? null,
