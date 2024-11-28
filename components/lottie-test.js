@@ -1,29 +1,25 @@
-import React from 'react';
-import Lottie from 'react-lottie';
+import React, { useState, useEffect } from 'react';
+import Lottie from 'lottie-react';
 import animationData from '../public/images/lady-ring.json'
 
-export default class LottieTest extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {isStopped: true};
-  }
-  
+export default function LottieTest() {
+  const [isStopped, setIsStopped] = useState(true);
 
-  render() {
-    setTimeout(
-      () => this.setState({ isStopped: false }), 
-      1350
-    );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsStopped(false);
+    }, 1350);
 
-    const defaultOptions = {
-      loop: true,
-      autoplay: true, 
-      animationData: animationData,
-      rendererSettings: {
-        preserveAspectRatio: 'xMidYMid slice'
-      }
-    };
+    return () => clearTimeout(timer);
+  }, []);
 
-    return <Lottie options={defaultOptions} isStopped={this.state.isStopped} />
-  }
+  return (
+    <Lottie 
+      animationData={animationData}
+      loop={true}
+      autoplay={true}
+      style={{ width: '100%', height: '100%' }}
+      initialSegment={isStopped ? [0, 0] : undefined}
+    />
+  );
 }
