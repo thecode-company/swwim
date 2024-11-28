@@ -6,7 +6,14 @@ export default {
     type: 'website',
     locale: 'en_GB',
     url: 'https://www.weswwim.com/',
-    site_name: 'Swwim'
+    site_name: 'Swwim',
+    images: [
+      {
+        url: 'https://weswwim.com/images/social-share.jpg',
+        width: 1200,
+        height: 630,
+      },
+    ],
   },
   twitter: {
     handle: '@weswwim',
