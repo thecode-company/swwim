@@ -5,7 +5,6 @@ export default {
   openGraph: {
     type: 'website',
     locale: 'en_GB',
-    url: 'https://www.weswwim.com/',
     site_name: 'Swwim',
     images: [
       {
