@@ -16,7 +16,6 @@ import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
 import Footer from '../../components/footer'
 import { useContext, useEffect } from 'react'
 import { PopupContext } from '../../contexts/popup'
-import { useRouter } from 'next/router';
 
 const query = `*[_type == "caseStudy" && slug.current == $slug][0]{
   seo {
@@ -121,10 +120,7 @@ const pageService = new SanityPageService(query)
 export default function CaseStudySlug(initialData) {
   const { data: { seo, title, about, images, stats, services, content, slug, contact, nextCase, firstCase, popup }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
-  const router = useRouter();
-  const origin = typeof window !== "undefined" && window.location.origin ? window.location.origin : "";
-
-  const canonicalUrl = origin + router.asPath;
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
     setPopupContext([{
