@@ -121,9 +121,10 @@ const pageService = new SanityPageService(query)
 export default function CaseStudySlug(initialData) {
   const { data: { seo, title, about, images, stats, services, content, slug, contact, nextCase, firstCase, popup }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
+  const router = useRouter();
   const origin = typeof window !== "undefined" && window.location.origin ? window.location.origin : "";
 
-  const canonicalUrl = `https://www.yourdomain.com${router.asPath}`;
+  const canonicalUrl = origin + router.asPath;
 
   useEffect(() => {
     setPopupContext([{
