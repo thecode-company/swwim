@@ -77,6 +77,7 @@ export default function CaseStudiesLanding(initialData) {
   const { data: { cases, contact, popup, services}  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   const handleChange = event => {
     if (event.target.value == 'all') {
@@ -103,6 +104,10 @@ export default function CaseStudiesLanding(initialData) {
     <Layout>
       <NextSeo
         title="Case Studies"
+        canonical={canonicalUrl}
+        openGraph={{
+          url: canonicalUrl,
+        }}
       />
 
       <motion.div

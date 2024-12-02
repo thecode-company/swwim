@@ -17,6 +17,7 @@ import { SmoothScrollProvider } from '../contexts/SmoothScroll.context'
 import ConditionalWrap from 'conditional-wrap';
 import ImageStandard from '../helpers/image-standard'
 import { PopupContext } from '../contexts/popup'
+import { useRouter } from 'next/router';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -89,6 +90,8 @@ const pageService = new SanityPageService(query)
 export default function About(initialData) {
   const { data: { about, team, contact, popup }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
+  const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
     setPopupContext([{
@@ -134,7 +137,9 @@ export default function About(initialData) {
       <NextSeo
         title={about.seo?.metaTitle ? about.seo.metaTitle : about.title}
         description={about.seo?.metaDesc ? about.seo.metaDesc : null}
+        canonical={canonicalUrl}
         openGraph={{
+          url: canonicalUrl,
           description: about.seo?.metaDesc ? about.seo.metaDesc : null,
           images: [
             {

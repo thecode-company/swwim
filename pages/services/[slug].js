@@ -13,6 +13,7 @@ import CaseCarousel from '../../components/case-carousel'
 import SanityBlockContent from '@sanity/block-content-to-react'
 import { useContext, useEffect } from 'react'
 import { PopupContext } from '../../contexts/popup'
+import { useRouter } from 'next/router'
 
 const query = `*[_type == "service" && slug.current == $slug][0]{
   seo {
@@ -63,6 +64,8 @@ const pageService = new SanityPageService(query)
 export default function CaseStudySlug(initialData) {
   const { data: { seo, title, about, images, content, slug, clients, contact, popup }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
+  const router = useRouter();
+  const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
     setPopupContext([{
@@ -82,7 +85,9 @@ export default function CaseStudySlug(initialData) {
       <NextSeo
         title={seo?.metaTitle ? seo?.metaTitle : title }
         description={seo?.metaDesc ? seo?.metaDesc : about}
+        canonical={canonicalUrl}
         openGraph={{
+          url: canonicalUrl,
           images: [
             {
               url: seo?.shareGraphic?.asset.url ?? null,
