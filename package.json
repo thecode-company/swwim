@@ -20,6 +20,7 @@
     "groq": "^2.2.6",
     "gsap": "npm:@gsap/business@^3.6.1",
     "locomotive-scroll": "^4.1.1",
+    "lottie-react": "^2.4.0",
     "next": "11.0.1",
     "next-images": "^1.8.1",
     "next-sanity": "^0.1.12",
