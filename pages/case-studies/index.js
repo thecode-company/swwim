@@ -13,6 +13,7 @@ import SanityPageService from '../../services/sanityPageService'
 import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
 import ImageStandard from '../../helpers/image-standard'
 import { useContext, useEffect } from 'react'
+import { getRelevantSignupForm } from '../../components/signupForm';
 import { PopupContext } from '../../contexts/popup'
 import { useRouter } from 'next/router'
 
@@ -49,6 +50,15 @@ const query = `{
       url
     }
   },
+  "signupForms": *[_type == "signupForm"] {
+    title,
+    embedCode,
+    pageType,
+    specificPage[]-> {
+      _type,
+      _id
+    }
+  },
   "popup": *[_type == "popups"][0] {
     popupTitle,
     popupText,
@@ -74,7 +84,7 @@ const query = `{
 const pageService = new SanityPageService(query)
 
 export default function CaseStudiesLanding(initialData) {
-  const { data: { cases, contact, popup, services}  } = pageService.getPreviewHook(initialData)()
+  const { data: { cases, contact, popup, services, signupForms }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
@@ -88,6 +98,8 @@ export default function CaseStudiesLanding(initialData) {
   };
 
   useEffect(() => {
+    const relevantForm = getRelevantSignupForm(signupForms, 'case-studies');
+    
     setPopupContext([{
       popupEnabled: popup.popupEnabled,
       bannerText: popup.popupBannerText,
@@ -97,8 +109,9 @@ export default function CaseStudiesLanding(initialData) {
       article: popup.popupArticle,
       articleLink: popup.popupArticleLink,
       image: popup.popupImage,
+      signupForm: relevantForm
     }])
-  }, [])
+  }, [signupForms, popup])
 
   return (
     <Layout>

@@ -10,12 +10,14 @@ import { SmoothScrollProvider } from '../contexts/SmoothScroll.context'
 import Link from 'next/link'
 import Image from 'next/image'
 import ImageStandard from '../helpers/image-standard'
+import { getRelevantSignupForm } from '../components/signupForm';
 import { PopupContext } from '../contexts/popup'
 import { useContext, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 const query = `{
   "contact": *[_type == "contact"][0] {
+    _id,
     title,
     email,
     phoneNumber,
@@ -23,6 +25,15 @@ const query = `{
     socialLinks[] {
       title,
       url
+    }
+  },
+  "signupForms": *[_type == "signupForm"] {
+    title,
+    embedCode,
+    pageType,
+    specificPage[]-> {
+      _type,
+      _id
     }
   },
   "popup": *[_type == "popups"][0] {
@@ -50,12 +61,13 @@ const query = `{
 const pageService = new SanityPageService(query)
 
 export default function CustomError(initialData) {
-  const { data: {  contact, popup }  } = pageService.getPreviewHook(initialData)()
+  const { data: {  contact, signupForms, popup }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
+    const relevantForm = getRelevantSignupForm(signupForms, '404', contact._id);
     setPopupContext([{
       popupEnabled: popup.popupEnabled,
       bannerText: popup.popupBannerText,
@@ -65,8 +77,9 @@ export default function CustomError(initialData) {
       article: popup.popupArticle,
       articleLink: popup.popupArticleLink,
       image: popup.popupImage,
+      signupForm: relevantForm
     }])
-  }, [])
+  }, [signupForms, popup, contact._id])
 
   return (
     <Layout>

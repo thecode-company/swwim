@@ -11,11 +11,13 @@ import ImageWrapper from '../../helpers/image-wrapper'
 import GuidesContentWrapper from '../../components/guides-content-wrapper'
 import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
 import { PopupContext } from '../../contexts/popup'
+import { getRelevantSignupForm } from '../../components/signupForm';
 import { useContext, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 const query = `
   *[_type == "guides" && slug.current == $slug][0]{
+    _id,
     seo {
       ...,
       shareGraphic {
@@ -47,6 +49,15 @@ const query = `
         url
       }
     },
+    "signupForms": *[_type == "signupForm"] {
+      title,
+      embedCode,
+      pageType,
+      specificPage[]-> {
+        _type,
+        _id
+      }
+    },
     "popup": *[_type == "popups"][0] {
       popupTitle,
       popupText,
@@ -74,10 +85,11 @@ const pageService = new SanityPageService(query)
 
 export default function NewsSlug(initialData) {
   const { data: { seo, heroImage, introText, title, download, content, contact, newsletterSignupHeading,
-    newsletterSignupText, popup }  } = pageService.getPreviewHook(initialData)()
+    newsletterSignupText, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
+  const relevantForm = getRelevantSignupForm(signupForms, 'downloads', initialData._id);
 
   useEffect(() => {
     setPopupContext([{
@@ -89,8 +101,9 @@ export default function NewsSlug(initialData) {
       article: popup.popupArticle,
       articleLink: popup.popupArticleLink,
       image: popup.popupImage,
+      signupForm: relevantForm
     }])
-  }, [])
+  }, [signupForms, popup, initialData._id])
 
   return (
     <Layout>

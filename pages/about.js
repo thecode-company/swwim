@@ -17,12 +17,14 @@ import { SmoothScrollProvider } from '../contexts/SmoothScroll.context'
 import ConditionalWrap from 'conditional-wrap';
 import ImageStandard from '../helpers/image-standard'
 import { PopupContext } from '../contexts/popup'
+import { getRelevantSignupForm } from '../components/signupForm';
 import { useRouter } from 'next/router';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const query = `{
-  "about": *[_type == "about"][0]{
+  "about": *[_type == "about"][0] {
+    _id,
     seo {
       ...,
       shareGraphic {
@@ -64,6 +66,15 @@ const query = `{
       url
     }
   },
+  "signupForms": *[_type == "signupForm"] {
+    title,
+    embedCode,
+    pageType,
+    specificPage[]-> {
+      _type,
+      _id
+    }
+  },
   "popup": *[_type == "popups"][0] {
     popupTitle,
     popupText,
@@ -88,12 +99,13 @@ const query = `{
 const pageService = new SanityPageService(query)
 
 export default function About(initialData) {
-  const { data: { about, team, contact, popup }  } = pageService.getPreviewHook(initialData)()
+  const { data: { about, team, contact, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
+    const relevantForm = getRelevantSignupForm(signupForms, 'about', about._id);
     setPopupContext([{
       popupEnabled: popup.popupEnabled,
       title: popup.popupTitle,
@@ -102,8 +114,9 @@ export default function About(initialData) {
       article: popup.popupArticle,
       articleLink: popup.popupArticleLink,
       image: popup.popupImage,
+      signupForm: relevantForm
     }])
-  }, [])
+  }, [signupForms, popup, about._id])
 
   const revealRefs = useRef(null);
 

@@ -15,6 +15,7 @@ import GuidesContentWrapper from '../../components/guides-content-wrapper'
 import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
 import { useContext, useEffect } from 'react'
 import { PopupContext } from '../../contexts/popup'
+import { getRelevantSignupForm } from '../../components/signupForm';
 import { useRouter } from 'next/router'
 
 const readingTime = require('reading-time');
@@ -22,6 +23,7 @@ const readingTime = require('reading-time');
 
 const query = `
   *[_type == "events" && slug.current == $slug][0]{
+    _id,
     seo {
       ...,
       shareGraphic {
@@ -49,6 +51,15 @@ const query = `
       socialLinks[] {
         title,
         url
+      }
+    },
+    "signupForms": *[_type == "signupForm"] {
+      title,
+      embedCode,
+      pageType,
+      specificPage-> {
+        _type,
+        _id
       }
     },
     "popup": *[_type == "popups"][0] {
@@ -88,9 +99,10 @@ function toPlainText(blocks = []) {
 const pageService = new SanityPageService(query)
 
 export default function NewsSlug(initialData) {
-  const { data: { seo, heroImage, date, location, time, introText, title, content, newsletterSignupHeading, newsletterSignupText, contact, popup }  } = pageService.getPreviewHook(initialData)()
+  const { data: { seo, heroImage, date, location, time, introText, title, content, newsletterSignupHeading, newsletterSignupText, contact, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
+  const relevantForm = getRelevantSignupForm(signupForms, 'events', initialData._id);
 
   const [popupContext, setPopupContext] = useContext(PopupContext);
 
@@ -104,8 +116,9 @@ export default function NewsSlug(initialData) {
       article: popup.popupArticle,
       articleLink: popup.popupArticleLink,
       image: popup.popupImage,
+      signupForm: relevantForm
     }])
-  }, [])
+  }, [signupForms, popup, initialData._id])
 
   let d = spacetime(date)
   let estimatedReadingTime = readingTime(toPlainText(content));

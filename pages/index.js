@@ -25,11 +25,13 @@ import ImageStandard from '../helpers/image-standard';
 import { PopupContext } from '../contexts/popup'
 import ConditionalWrap from 'conditional-wrap';
 import { useRouter } from 'next/router';
+import { getRelevantSignupForm, DEFAULT_SIGNUP_FORM } from '../components/signupForm';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const query = `{
   "home": *[_type == "home"][0]{
+    _id,
     title,
     seo {
       ...,
@@ -121,6 +123,15 @@ const query = `{
       url
     }
   },
+  "signupForms": *[_type == "signupForm"] {
+    title,
+    embedCode,
+    pageType,
+    specificPage-> {
+      _type,
+      _id
+    }
+  },
   "popup": *[_type == "popups"][0] {
     popupTitle,
     popupText,
@@ -146,12 +157,18 @@ const query = `{
 const pageService = new SanityPageService(query)
 
 export default function Home(initialData) {
-  const { data: { home, services, clients, news, contact, popup }  } = pageService.getPreviewHook(initialData)()
+  const { data: { home, services, clients, news, contact, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
+    const relevantForm = getRelevantSignupForm(
+      signupForms, 
+      'home',
+      home._id
+    );
+
     setPopupContext([{
       popupEnabled: popup.popupEnabled,
       bannerText: popup.popupBannerText,
@@ -161,17 +178,10 @@ export default function Home(initialData) {
       article: popup.popupArticle,
       articleLink: popup.popupArticleLink,
       image: popup.popupImage,
-    }])
-  }, [])
+      signupForm: relevantForm
+    }]);
+  }, [signupForms, home, popup]);
 
-  // function goToContent(event) {
-  //   event.preventDefault()
-  //   scroll && scroll.scrollTo(500)
-
-  //   setTimeout(() => scroll && scroll.update(), 250);
-  // }
-  
-  
   const revealRefs = useRef(null);
   const wavyTextRefs = useRef(null);
   const svgDrawRefs = useRef(null);
@@ -179,59 +189,6 @@ export default function Home(initialData) {
   revealRefs.current = [];
   wavyTextRefs.current = [];
   svgDrawRefs.current = [];
-
-  // useEffect(() => {
-  //   revealRefs.current.forEach((el, index) => {
-  //     gsap.fromTo(el, {
-  //       autoAlpha: 0
-  //     }, {
-  //       duration: 0.35, 
-  //       autoAlpha: 1,
-  //       ease: "power2.easeInOut",
-  //       scrollTrigger: {
-  //         trigger: el,
-  //         start: 'top center+=400',
-  //         toggleActions: 'play none none reverse'
-  //       }
-  //     });
-  //   });
-  // }, []);
-
-  // Wavey Text Reveals
-  // useEffect(() => {
-  //   wavyTextRefs.current.forEach((el, index) => {
-  //     gsap.fromTo(el, {
-  //       y: -2
-  //     }, {
-  //       duration: 1, 
-  //       y: 4,
-  //       ease: "power2.easeInOut",
-  //       scrollTrigger: {
-  //         trigger: el,
-  //         start: 'top center+=300',
-  //         toggleActions: 'play none none reverse'
-  //       }
-  //     });
-  //   });
-  // }, []);
-  
-  // SVG Draw Reveal
-  // useEffect(() => {
-  //   svgDrawRefs.current.forEach((el, index) => {
-  //     gsap.fromTo(el, {
-  //       y: -2
-  //     }, {
-  //       duration: 1, 
-  //       y: 4,
-  //       ease: "power2.easeInOut",
-  //       scrollTrigger: {
-  //         trigger: el,
-  //         start: 'top center+=300',
-  //         toggleActions: 'play none none reverse'
-  //       }
-  //     });
-  //   });
-  // }, []);
 
   const fadeRevealRefs = el => {
     if (el && !revealRefs.current.includes(el)) {
@@ -350,7 +307,7 @@ export default function Home(initialData) {
                   </motion.div>
                 </div>
               </div>
-              
+
               <div className="overflow-hidden">
                 <motion.span variants={textReveal} className="block font-display uppercase text-[13.6vw] md:text-[10.5vw] 2xl:text-[170px] leading-none relative z-10">Social Media</motion.span>
               </div>
@@ -359,7 +316,6 @@ export default function Home(initialData) {
                 <motion.span variants={textReveal} className="block font-display uppercase text-[13.6vw] md:text-[10.5vw] 2xl:text-[170px] leading-none relative z-10">Marketing</motion.span>
               </div>
 
-              
               <div className="overflow-hidden">
                 <motion.span variants={textReveal} className="block md:text-right font-display uppercase text-[13.6vw] md:text-[10.5vw] 2xl:text-[170px] leading-none relative z-10">That Floats</motion.span>
               </div>

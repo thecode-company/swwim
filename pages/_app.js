@@ -17,6 +17,49 @@ import {PopupContext} from '../contexts/popup'
 import { GTM_ID, pageview } from '../lib/gtag'
 import ImageWrapper from '../helpers/image-wrapper'
 
+const getRelevantSignupForm = (signupForms, currentPageType, currentPageId) => {
+  // First check for a specific page match
+  const specificForm = signupForms?.find(form => 
+    form.pageType === 'single' && 
+    form.specificPage?._id === currentPageId
+  );
+  if (specificForm) return specificForm;
+
+  // Then check for page type match
+  const typeForm = signupForms?.find(form => 
+    form.pageType === currentPageType
+  );
+  if (typeForm) return typeForm;
+
+  return null;
+};
+
+const extractFormAction = (embedCode) => {
+  if (!embedCode) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(embedCode, 'text/html');
+  const form = doc.querySelector('form');
+  return form ? form.getAttribute('action') : '';
+};
+
+const extractHiddenFields = (embedCode) => {
+  if (!embedCode) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(embedCode, 'text/html');
+  const hiddenInputs = Array.from(doc.querySelectorAll('input[type="hidden"]'))
+    .map(input => input.outerHTML)
+    .join('');
+  return hiddenInputs;
+};
+
+const extractHoneypotField = (embedCode) => {
+  if (!embedCode) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(embedCode, 'text/html');
+  const honeypot = doc.querySelector('div[aria-hidden="true"]');
+  return honeypot ? honeypot.outerHTML : '';
+};
+
 export default function App({ Component, pageProps }) {
   const router = useRouter()
   const [menuIsOpen, setMenuIsOpen] = useState(false);
@@ -35,13 +78,6 @@ export default function App({ Component, pageProps }) {
       // document.body.style.height = '100%';
     }
   }
-
-  // useEffect(() => {
-  //   router.events.on('routeChangeComplete', pageview)
-  //   return () => {
-  //     router.events.off('routeChangeComplete', pageview)
-  //   }
-  // }, [router.events])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -123,24 +159,54 @@ export default function App({ Component, pageProps }) {
                         
                         {popupContext[0]?.newsletter && (
                           <div id="mc_embed_signup" className="w-full mt-9">
-                            <form action="https://weswwim.us13.list-manage.com/subscribe/post?u=a15d6a11b0fb279a814280022&amp;id=23124acf1f&amp;f_id=00e593e2f0" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" className="validate w-full relative" target="_blank" onSubmit={newsletterToggle}>
-                              <div className="mc-field-group w-full">
-                                <label htmlFor="mce-EMAIL" className="hidden">Email Address  <span className="inline">*</span></label>
-                                <input type="email" placeholder="Email Address" name="EMAIL" className="required email w-full border border-blue border-opacity-50 rounded-full p-[12px] md:p-[14px] px-6 pr-[130px] pl-5 md:pl-6 md:pr-40 text-blue placeholder-blue placeholder-opacity-50" id="mce-EMAIL" required />
-                              </div>
-                              <div id="mce-responses">
-                                <div className="hidden" id="mce-error-response"></div>
-                                <div className="hidden" id="mce-success-response"></div>
-                              </div> 
-                              <div className="absolute left-[-5000px]" aria-hidden="true">
-                                <input type="text" name="b_a15d6a11b0fb279a814280022_23124acf1f" tabIndex="-1" value="" />
-                              </div>
+                              {popupContext[0]?.signupForm?.embedCode && (
+                              <form 
+                                action={extractFormAction(popupContext[0].signupForm.embedCode)}
+                                method="post" 
+                                id="mc-embedded-subscribe-form" 
+                                name="mc-embedded-subscribe-form" 
+                                className="validate w-full relative" 
+                                target="_blank" 
+                                onSubmit={newsletterToggle}
+                              >
+                                <div className="mc-field-group w-full">
+                                  <label htmlFor="mce-EMAIL" className="hidden">Email Address <span className="inline">*</span></label>
+                                  <input 
+                                    type="email" 
+                                    placeholder="Email Address" 
+                                    name="EMAIL" 
+                                    className="required email w-full border border-blue border-opacity-50 rounded-full p-[12px] md:p-[14px] px-6 pr-[130px] pl-5 md:pl-6 md:pr-40 text-blue placeholder-blue placeholder-opacity-50" 
+                                    id="mce-EMAIL" 
+                                    required 
+                                  />
+                                </div>
 
-                              <button type="submit" className={`rounded-full text-center font-bold px-8 md:px-[34px] py-[11px] bg-blue text-white ring-blue block group overflow-hidden transition-colors ease-in-out duration-500 z-10 absolute top-0 right-0 mt-1 mr-1 text-sm md:text-base`} name="subscribe" id="mc-embedded-subscribe">
-                                <span className="block relative z-10">Sign Up</span>
-                                <div className="absolute bottom-0 left-0 w-full h-0 bg-blue-dark group-hover:h-full group-focus:h-full transition-all ease-in-out duration-500 z-0"></div>
-                              </button>
-                            </form>
+                                <div id="mce-responses">
+                                  <div className="hidden" id="mce-error-response"></div>
+                                  <div className="hidden" id="mce-success-response"></div>
+                                </div>
+
+                                {/* Hidden fields from Mailchimp embed code */}
+                                <div dangerouslySetInnerHTML={{ 
+                                  __html: extractHiddenFields(popupContext[0].signupForm.embedCode)
+                                }} />
+
+                                {/* Honeypot field */}
+                                <div dangerouslySetInnerHTML={{ 
+                                  __html: extractHoneypotField(popupContext[0].signupForm.embedCode)
+                                }} />
+
+                                <button 
+                                  type="submit" 
+                                  className={`rounded-full text-center font-bold px-8 md:px-[34px] py-[11px] bg-blue text-white ring-blue block group overflow-hidden transition-colors ease-in-out duration-500 z-10 absolute top-0 right-0 mt-1 mr-1 text-sm md:text-base`} 
+                                  name="subscribe" 
+                                  id="mc-embedded-subscribe"
+                                >
+                                  <span className="block relative z-10">Sign Up</span>
+                                  <div className="absolute bottom-0 left-0 w-full h-0 bg-blue-dark group-hover:h-full group-focus:h-full transition-all ease-in-out duration-500 z-0"></div>
+                                </button>
+                              </form>
+                            )}
                           </div>
                         )}
 
@@ -161,11 +227,11 @@ export default function App({ Component, pageProps }) {
                                   <div className="absolute bottom-0 left-0 w-full group-hover:opacity-60 transition-opacity ease-in-out duration-500">
                                     <div className="relative flex overflow-x-hidden">
                                       <div className="animate-marquee-fast animation whitespace-nowrap">
-                                        <svg className="block w-full" viewBox="0 0 78 7" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.553 4.595c-.729.068-1.373-.134-1.806-.572-.455-.462-.591-1.121-.383-1.768.102-.314-.058-.57-.357-.7-2.997-1.298-4.725.07-6.252 1.277-1.06.837-2.06 1.628-3.511 1.763-.732.07-1.374-.134-1.806-.572-.454-.462-.6-1.123-.38-1.768.16-.471-.31-.68-.359-.7-.748-.325-1.419-.482-2.027-.517-1.823-.108-3.082.888-4.228 1.794-1.059.837-2.06 1.628-3.511 1.763-.732.07-1.373-.134-1.805-.572-.455-.462-.6-1.123-.381-1.768.16-.471-.31-.68-.358-.7-2.996-1.297-4.725.07-6.253 1.277-1.06.837-2.059 1.628-3.51 1.763-.386.037-.664.333-.622.663.04.307.343.534.697.534a.847.847 0 00.078-.003c1.911-.18 3.186-1.187 4.31-2.076 1.361-1.075 2.375-1.87 4.19-1.268a2.746 2.746 0 00.775 2.352c.644.654 1.578 1.012 2.607 1.012.115 0 .233-.007.35-.016a.848.848 0 00.078-.004c1.911-.18 3.186-1.187 4.31-2.075 1.358-1.072 2.37-1.865 4.177-1.272a.103.103 0 00.013.005 2.746 2.746 0 00.775 2.35c.645.654 1.578 1.013 2.608 1.013.14 0 .281-.007.424-.02 1.913-.18 3.188-1.187 4.313-2.076 1.359-1.075 2.375-1.87 4.189-1.267a2.745 2.745 0 00.777 2.35c.644.654 1.578 1.013 2.608 1.013.14 0 .28-.006.424-.02.386-.036.664-.333.621-.662-.042-.33-.385-.57-.775-.533z" fill="currentColor" stroke="currentColor" strokeWidth=".72"/><path d="M76.553 4.595c-.729.068-1.373-.134-1.806-.572-.455-.462-.591-1.121-.383-1.768.102-.314-.058-.57-.357-.7-2.997-1.298-4.726.07-6.252 1.277-1.06.837-2.06 1.628-3.511 1.763-.732.07-1.374-.134-1.806-.572-.455-.462-.6-1.123-.38-1.768.16-.471-.31-.68-.359-.7-.748-.325-1.419-.482-2.026-.517-1.824-.108-3.083.888-4.229 1.794-1.059.837-2.06 1.628-3.511 1.763-.731.07-1.373-.134-1.805-.572-.455-.462-.6-1.123-.381-1.768.16-.471-.31-.68-.358-.7-2.995-1.297-4.725.07-6.253 1.277-1.06.837-2.059 1.628-3.51 1.763-.386.037-.664.333-.622.663.04.307.343.534.697.534a.844.844 0 00.078-.003c1.911-.18 3.186-1.187 4.31-2.076 1.361-1.075 2.375-1.87 4.19-1.268a2.746 2.746 0 00.775 2.352c.645.654 1.578 1.012 2.607 1.012.115 0 .233-.007.35-.016a.848.848 0 00.078-.004c1.911-.18 3.186-1.187 4.31-2.075 1.358-1.072 2.37-1.865 4.177-1.272l.013.005a2.746 2.746 0 00.775 2.35c.645.654 1.578 1.013 2.608 1.013.14 0 .281-.007.424-.02 1.913-.18 3.188-1.187 4.313-2.076 1.359-1.075 2.374-1.87 4.188-1.267a2.745 2.745 0 00.778 2.35c.644.654 1.578 1.013 2.608 1.013.14 0 .28-.006.424-.02.386-.036.664-.333.622-.662-.043-.33-.386-.57-.775-.533z" fill="currentColor" stroke="currentColor" strokeWidth=".72"/></svg>
+                                        <svg className="block w-full" viewBox="0 0 78 7" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.553 4.595c-.729.068-1.373-.134-1.806-.572-.455-.462-.591-1.121-.383-1.768.102-.314-.058-.57-.357-.7-2.997-1.298-4.725.07-6.252 1.277-1.06.837-2.06 1.628-3.511 1.763-.732.07-1.374-.134-1.806-.572-.454-.462-.6-1.123-.38-1.768.16-.471-.31-.68-.359-.7-.748-.325-1.419-.482-2.027-.517-1.823-.108-3.082.888-4.228 1.794-1.059.837-2.06 1.628-3.511 1.763-.732.07-1.373-.134-1.805-.572-.455-.462-.6-1.123-.381-1.768.16-.471-.31-.68-.358-.7-2.996-1.297-4.725.07-6.253 1.277-1.06.837-2.059 1.628-3.51 1.763-.386.037-.664.333-.622.663.04.307.343.534.697.534a.847.847 0 00.078-.003c1.911-.18 3.186-1.187 4.31-2.076 1.361-1.075 2.375-1.87 4.19-1.268a2.746 2.746 0 00.775 2.352c.644.654 1.578 1.012 2.607 1.012.115 0 .233-.007.35-.016a.848.848 0 00.078-.004c1.911-.18 3.186-1.187 4.31-2.075 1.358-1.072 2.37-1.865 4.177-1.272a.103.103 0 00.013.005 2.746 2.746 0 00.775 2.35c.645.654 1.578 1.013 2.608 1.013.14 0 .281-.007.424-.02 1.913-.18 3.188-1.187 4.313-2.076 1.359-1.075 2.375-1.87 4.189-1.267a2.745 2.745 0 00.777 2.35c.644.654 1.578 1.013 2.608 1.013.14 0 .28-.006.424-.02.386-.036.664-.333.621-.662-.042-.33-.385-.57-.775-.533z" fill="currentColor" stroke="currentColor" strokeWidth=".72"/><path d="M76.553 4.595c-.729.068-1.373-.134-1.806-.572-.455-.462-.591-1.121-.383-1.768.102-.314-.058-.57-.357-.7-2.997-1.298-4.726.07-6.252 1.277-1.06.837-2.06 1.628-3.511 1.763-.732.07-1.374-.134-1.806-.572-.455-.462-.6-1.123-.38-1.768.16-.471-.31-.68-.359-.7-.748-.325-1.419-.482-2.026-.517-1.824-.108-3.083.888-4.229 1.794-1.059.837-2.06 1.628-3.511 1.763-.731.07-1.373-.134-1.805-.572-.455-.462-.6-1.123-.381-1.768.16-.471-.31-.68-.358-.7-2.995-1.297-4.725.07-6.253 1.277-1.06.837-2.059 1.628-3.51 1.763-.386.037-.664.333-.622.663.04.307.343.534.697.534a.844.844 0 00.078-.003c1.911-.18 3.186-1.187 4.31-2.076 1.361-1.075 2.375-1.87 4.19-1.268a2.746 2.746 0 00.775 2.352c.645.654 1.578 1.012 2.607 1.012.115 0 .233-.007.35-.016a.848.848 0 00.078-.004c1.911-.18 3.186-1.187 4.31-2.075 1.358-1.072 2.37-1.865 4.177-1.272l.013.005a2.746 2.746 0 00.775 2.35c.645.654 1.578 1.013 2.608 1.013.14 0 .281-.007.424-.02 1.913-.18 3.188-1.187 4.313-2.076 1.359-1.075 2.375-1.87 4.189-1.267a2.745 2.745 0 00.777 2.35c.644.654 1.578 1.013 2.608 1.013.14 0 .28-.006.424-.02.386-.036.664-.333.622-.662-.043-.33-.386-.57-.775-.533z" fill="currentColor" stroke="currentColor" strokeWidth=".72"/></svg>
                                       </div>
 
                                       <div className="absolute top-0 animation animate-marquee2-fast whitespace-nowrap">
-                                        <svg className="block w-full -ml-1" viewBox="0 0 78 7" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.553 4.595c-.729.068-1.373-.134-1.806-.572-.455-.462-.591-1.121-.383-1.768.102-.314-.058-.57-.357-.7-2.997-1.298-4.725.07-6.252 1.277-1.06.837-2.06 1.628-3.511 1.763-.732.07-1.374-.134-1.806-.572-.454-.462-.6-1.123-.38-1.768.16-.471-.31-.68-.359-.7-.748-.325-1.419-.482-2.027-.517-1.823-.108-3.082.888-4.228 1.794-1.059.837-2.06 1.628-3.511 1.763-.732.07-1.373-.134-1.805-.572-.455-.462-.6-1.123-.381-1.768.16-.471-.31-.68-.358-.7-2.996-1.297-4.725.07-6.253 1.277-1.06.837-2.059 1.628-3.51 1.763-.386.037-.664.333-.622.663.04.307.343.534.697.534a.847.847 0 00.078-.003c1.911-.18 3.186-1.187 4.31-2.076 1.361-1.075 2.375-1.87 4.19-1.268a2.746 2.746 0 00.775 2.352c.644.654 1.578 1.012 2.607 1.012.115 0 .233-.007.35-.016a.848.848 0 00.078-.004c1.911-.18 3.186-1.187 4.31-2.075 1.358-1.072 2.37-1.865 4.177-1.272a.103.103 0 00.013.005 2.746 2.746 0 00.775 2.35c.645.654 1.578 1.013 2.608 1.013.14 0 .281-.007.424-.02 1.913-.18 3.188-1.187 4.313-2.076 1.359-1.075 2.375-1.87 4.189-1.267a2.745 2.745 0 00.777 2.35c.644.654 1.578 1.013 2.608 1.013.14 0 .28-.006.424-.02.386-.036.664-.333.621-.662-.042-.33-.385-.57-.775-.533z" fill="currentColor" stroke="currentColor" strokeWidth=".72"/><path d="M76.553 4.595c-.729.068-1.373-.134-1.806-.572-.455-.462-.591-1.121-.383-1.768.102-.314-.058-.57-.357-.7-2.997-1.298-4.726.07-6.252 1.277-1.06.837-2.06 1.628-3.511 1.763-.732.07-1.374-.134-1.806-.572-.455-.462-.6-1.123-.38-1.768.16-.471-.31-.68-.359-.7-.748-.325-1.419-.482-2.026-.517-1.824-.108-3.083.888-4.229 1.794-1.059.837-2.06 1.628-3.511 1.763-.731.07-1.373-.134-1.805-.572-.455-.462-.6-1.123-.381-1.768.16-.471-.31-.68-.358-.7-2.995-1.297-4.725.07-6.253 1.277-1.06.837-2.059 1.628-3.51 1.763-.386.037-.664.333-.622.663.04.307.343.534.697.534a.844.844 0 00.078-.003c1.911-.18 3.186-1.187 4.31-2.076 1.361-1.075 2.375-1.87 4.19-1.268a2.746 2.746 0 00.775 2.352c.645.654 1.578 1.012 2.607 1.012.115 0 .233-.007.35-.016a.848.848 0 00.078-.004c1.911-.18 3.186-1.187 4.31-2.075 1.358-1.072 2.37-1.865 4.177-1.272l.013.005a2.746 2.746 0 00.775 2.35c.645.654 1.578 1.013 2.608 1.013.14 0 .281-.007.424-.02 1.913-.18 3.188-1.187 4.313-2.076 1.359-1.075 2.374-1.87 4.188-1.267a2.745 2.745 0 00.778 2.35c.644.654 1.578 1.013 2.608 1.013.14 0 .28-.006.424-.02.386-.036.664-.333.622-.662-.043-.33-.386-.57-.775-.533z" fill="currentColor" stroke="currentColor" strokeWidth=".72"/></svg>
+                                        <svg className="block w-full -ml-1" viewBox="0 0 78 7" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.553 4.595c-.729.068-1.373-.134-1.806-.572-.455-.462-.591-1.121-.383-1.768.102-.314-.058-.57-.357-.7-2.997-1.298-4.725.07-6.252 1.277-1.06.837-2.06 1.628-3.511 1.763-.732.07-1.374-.134-1.806-.572-.454-.462-.6-1.123-.38-1.768.16-.471-.31-.68-.359-.7-.748-.325-1.419-.482-2.027-.517-1.823-.108-3.082.888-4.228 1.794-1.059.837-2.06 1.628-3.511 1.763-.732.07-1.373-.134-1.805-.572-.455-.462-.6-1.123-.381-1.768.16-.471-.31-.68-.358-.7-2.996-1.297-4.725.07-6.253 1.277-1.06.837-2.059 1.628-3.51 1.763-.386.037-.664.333-.622.663.04.307.343.534.697.534a.847.847 0 00.078-.003c1.911-.18 3.186-1.187 4.31-2.076 1.361-1.075 2.375-1.87 4.19-1.268a2.746 2.746 0 00.775 2.352c.644.654 1.578 1.012 2.607 1.012.115 0 .233-.007.35-.016a.848.848 0 00.078-.004c1.911-.18 3.186-1.187 4.31-2.075 1.358-1.072 2.37-1.865 4.177-1.272a.103.103 0 00.013.005 2.746 2.746 0 00.775 2.35c.645.654 1.578 1.013 2.608 1.013.14 0 .281-.007.424-.02 1.913-.18 3.188-1.187 4.313-2.076 1.359-1.075 2.375-1.87 4.189-1.267a2.745 2.745 0 00.777 2.35c.644.654 1.578 1.013 2.608 1.013.14 0 .28-.006.424-.02.386-.036.664-.333.621-.662-.042-.33-.385-.57-.775-.533z" fill="currentColor" stroke="currentColor" strokeWidth=".72"/><path d="M76.553 4.595c-.729.068-1.373-.134-1.806-.572-.455-.462-.591-1.121-.383-1.768.102-.314-.058-.57-.357-.7-2.997-1.298-4.726.07-6.252 1.277-1.06.837-2.06 1.628-3.511 1.763-.732.07-1.374-.134-1.806-.572-.455-.462-.6-1.123-.38-1.768.16-.471-.31-.68-.359-.7-.748-.325-1.419-.482-2.026-.517-1.824-.108-3.083.888-4.229 1.794-1.059.837-2.06 1.628-3.511 1.763-.731.07-1.373-.134-1.805-.572-.455-.462-.6-1.123-.381-1.768.16-.471-.31-.68-.358-.7-2.995-1.297-4.725.07-6.253 1.277-1.06.837-2.059 1.628-3.51 1.763-.386.037-.664.333-.622.663.04.307.343.534.697.534a.844.844 0 00.078-.003c1.911-.18 3.186-1.187 4.31-2.076 1.361-1.075 2.375-1.87 4.19-1.268a2.746 2.746 0 00.775 2.352c.645.654 1.578 1.012 2.607 1.012.115 0 .233-.007.35-.016a.848.848 0 00.078-.004c1.911-.18 3.186-1.187 4.31-2.075 1.358-1.072 2.37-1.865 4.177-1.272l.013.005a2.746 2.746 0 00.775 2.35c.645.654 1.578 1.013 2.608 1.013.14 0 .281-.007.424-.02 1.913-.18 3.188-1.187 4.313-2.076 1.359-1.075 2.375-1.87 4.189-1.267a2.745 2.745 0 00.777 2.35c.644.654 1.578 1.013 2.608 1.013.14 0 .28-.006.424-.02.386-.036.664-.333.622-.662-.043-.33-.386-.57-.775-.533z" fill="currentColor" stroke="currentColor" strokeWidth=".72"/></svg>
                                       </div>
                                     </div>
                                   </div>

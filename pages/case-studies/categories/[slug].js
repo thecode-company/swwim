@@ -58,6 +58,15 @@ const query = `{
       url
     }
   },
+  "signupForms": *[_type == "signupForm"] {
+    title,
+    embedCode,
+    pageType,
+    specificPage-> {
+      _type,
+      _id
+    }
+  },
   "popup": *[_type == "popups"][0] {
     popupTitle,
     popupText,

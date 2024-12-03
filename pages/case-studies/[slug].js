@@ -15,10 +15,12 @@ import GuidesContentWrapper from '../../components/guides-content-wrapper'
 import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
 import Footer from '../../components/footer'
 import { useContext, useEffect } from 'react'
+import { getRelevantSignupForm } from '../../components/signupForm';
 import { PopupContext } from '../../contexts/popup'
 import { useRouter } from 'next/router';
 
 const query = `*[_type == "caseStudy" && slug.current == $slug][0]{
+  _id,
   seo {
     ...,
     shareGraphic {
@@ -94,6 +96,15 @@ const query = `*[_type == "caseStudy" && slug.current == $slug][0]{
       current
     }
   },
+  "signupForms": *[_type == "signupForm"] {
+    title,
+    embedCode,
+    pageType,
+    specificPage[]-> {
+      _type,
+      _id
+    }
+  },
   "popup": *[_type == "popups"][0] {
     popupTitle,
     popupText,
@@ -119,12 +130,15 @@ const query = `*[_type == "caseStudy" && slug.current == $slug][0]{
 const pageService = new SanityPageService(query)
 
 export default function CaseStudySlug(initialData) {
-  const { data: { seo, title, about, images, stats, services, content, slug, contact, nextCase, firstCase, popup }  } = pageService.getPreviewHook(initialData)()
+  const { data: { seo, title, about, images, stats, services, content, slug, contact, nextCase, firstCase, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
+    const caseStudyId = initialData._id;
+    const relevantForm = getRelevantSignupForm(signupForms, 'case-studies', caseStudyId);
+
     setPopupContext([{
       popupEnabled: popup.popupEnabled,
       bannerText: popup.popupBannerText,
@@ -134,8 +148,9 @@ export default function CaseStudySlug(initialData) {
       article: popup.popupArticle,
       articleLink: popup.popupArticleLink,
       image: popup.popupImage,
+      signupForm: relevantForm
     }])
-  }, [])
+  }, [signupForms, popup, initialData._id])
 
   return (
     <Layout>

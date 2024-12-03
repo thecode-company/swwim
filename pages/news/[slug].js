@@ -14,6 +14,7 @@ import ImageWrapper from '../../helpers/image-wrapper'
 import spacetime from 'spacetime'
 import EditorialContentWrapper from '../../components/editorial-content-wrapper'
 import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
+import { getRelevantSignupForm } from '../../components/signupForm';
 import { PopupContext } from '../../contexts/popup'
 import { useContext, useEffect } from 'react'
 import { useRouter } from 'next/router'
@@ -23,6 +24,7 @@ const readingTime = require('reading-time');
 
 const query = `
   *[_type == "news" && slug.current == $slug][0]{
+    _id,
     seo {
       ...,
       shareGraphic {
@@ -89,6 +91,15 @@ const query = `
       introText,
       title
     },
+    "signupForms": *[_type == "signupForm"] {
+      title,
+      embedCode,
+      pageType,
+      specificPage[]-> {
+        _type,
+        _id
+      }
+    },
     "popup": *[_type == "popups"][0] {
       popupTitle,
       popupText,
@@ -126,9 +137,10 @@ function toPlainText(blocks = []) {
 const pageService = new SanityPageService(query)
 
 export default function NewsSlug(initialData) {
-  const { data: { seo, heroImage, categories, author, date, introText, title, content, contact, moreNews, popup, slug }  } = pageService.getPreviewHook(initialData)()
+  const { data: { seo, heroImage, categories, author, date, introText, title, content, contact, moreNews, popup, slug, signupForms }  } = pageService.getPreviewHook(initialData)()
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
+  const relevantForm = getRelevantSignupForm(signupForms, 'news', initialData._id);
 
   let d = spacetime(date)
   let estimatedReadingTime = readingTime(toPlainText(content));
@@ -145,8 +157,9 @@ export default function NewsSlug(initialData) {
       article: popup.popupArticle,
       articleLink: popup.popupArticleLink,
       image: popup.popupImage,
+      signupForm: relevantForm
     }])
-  }, [])
+  }, [signupForms, popup, initialData._id])
 
   return (
     <Layout>
