@@ -17,7 +17,6 @@ import { useRouter } from 'next/router'
 
 const query = `{
   "contact": *[_type == "contact"][0] {
-    _id,
     title,
     email,
     phoneNumber,
@@ -67,7 +66,7 @@ export default function CustomError(initialData) {
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
   useEffect(() => {
-    const relevantForm = getRelevantSignupForm(signupForms, '404', contact._id);
+    const relevantForm = getRelevantSignupForm(signupForms, '404');
     setPopupContext([{
       popupEnabled: popup.popupEnabled,
       bannerText: popup.popupBannerText,
@@ -79,7 +78,7 @@ export default function CustomError(initialData) {
       image: popup.popupImage,
       signupForm: relevantForm
     }])
-  }, [signupForms, popup, contact._id])
+  }, [signupForms, popup])
 
   return (
     <Layout>
