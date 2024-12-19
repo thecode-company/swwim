@@ -85,6 +85,32 @@ const query = `
   }
 `
 
+const extractFormAction = (embedCode) => {
+  if (!embedCode) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(embedCode, 'text/html');
+  const form = doc.querySelector('form');
+  return form ? form.getAttribute('action') : '';
+};
+
+const extractHiddenFields = (embedCode) => {
+  if (!embedCode) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(embedCode, 'text/html');
+  const hiddenInputs = Array.from(doc.querySelectorAll('input[type="hidden"]'))
+    .map(input => input.outerHTML)
+    .join('');
+  return hiddenInputs;
+};
+
+const extractHoneypotField = (embedCode) => {
+  if (!embedCode) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(embedCode, 'text/html');
+  const honeypot = doc.querySelector('div[aria-hidden="true"]');
+  return honeypot ? honeypot.outerHTML : '';
+};
+
 function toPlainText(blocks = []) {
   return blocks
     .map(block => {
