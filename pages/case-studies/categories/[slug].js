@@ -62,7 +62,7 @@ const query = `{
     title,
     embedCode,
     pageType,
-    specificPage-> {
+    "specificPage": specificPage[]-> {
       _type,
       _id
     }

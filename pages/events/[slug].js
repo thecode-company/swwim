@@ -13,10 +13,11 @@ import ImageWrapper from '../../helpers/image-wrapper'
 import spacetime from 'spacetime'
 import GuidesContentWrapper from '../../components/guides-content-wrapper'
 import { SmoothScrollProvider } from '../../contexts/SmoothScroll.context'
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { PopupContext } from '../../contexts/popup'
 import { getRelevantSignupForm } from '../../components/signupForm';
 import { useRouter } from 'next/router'
+import { toPlainText } from '../../helpers/text-helpers'
 
 const readingTime = require('reading-time');
 
@@ -57,7 +58,7 @@ const query = `
       title,
       embedCode,
       pageType,
-      specificPage-> {
+      "specificPage": specificPage[]-> {
         _type,
         _id
       }
@@ -84,44 +85,6 @@ const query = `
     }
   }
 `
-
-const extractFormAction = (embedCode) => {
-  if (!embedCode) return '';
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(embedCode, 'text/html');
-  const form = doc.querySelector('form');
-  return form ? form.getAttribute('action') : '';
-};
-
-const extractHiddenFields = (embedCode) => {
-  if (!embedCode) return '';
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(embedCode, 'text/html');
-  const hiddenInputs = Array.from(doc.querySelectorAll('input[type="hidden"]'))
-    .map(input => input.outerHTML)
-    .join('');
-  return hiddenInputs;
-};
-
-const extractHoneypotField = (embedCode) => {
-  if (!embedCode) return '';
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(embedCode, 'text/html');
-  const honeypot = doc.querySelector('div[aria-hidden="true"]');
-  return honeypot ? honeypot.outerHTML : '';
-};
-
-function toPlainText(blocks = []) {
-  return blocks
-    .map(block => {
-      if (block._type !== 'block' || !block.children) {
-        return ''
-      }
-      return block.children.map(child => child.text).join('')
-    })
-    .join('\n\n')
-}
-
 const pageService = new SanityPageService(query)
 
 export default function NewsSlug(initialData) {
@@ -129,15 +92,48 @@ export default function NewsSlug(initialData) {
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
   const relevantForm = getRelevantSignupForm(signupForms, 'events', initialData._id);
-  
-  // Extract form parts using the existing utility functions from _app.js
-  const formAction = extractFormAction(relevantForm.embedCode);
-  const hiddenFields = extractHiddenFields(relevantForm.embedCode);
-  const honeypotField = extractHoneypotField(relevantForm.embedCode);
-  
+
   const [popupContext, setPopupContext] = useContext(PopupContext);
+  // Add state for form fields
+  const [formAction, setFormAction] = useState('');
+  const [hiddenFields, setHiddenFields] = useState('');
+  const [honeypotField, setHoneypotField] = useState('');
 
   useEffect(() => {
+    // Define the parser functions inside useEffect
+    const extractFormAction = (embedCode) => {
+      if (!embedCode) return '';
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(embedCode, 'text/html');
+      const form = doc.querySelector('form');
+      return form ? form.getAttribute('action') : '';
+    };
+
+    const extractHiddenFields = (embedCode) => {
+      if (!embedCode) return '';
+      console.log("embedCode", embedCode)
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(embedCode, 'text/html');
+      const hiddenInputs = Array.from(doc.querySelectorAll('input[type="hidden"]'))
+        .map(input => input.outerHTML)
+        .join('');
+      console.log("hiddenInputs", hiddenInputs)
+      return hiddenInputs;
+    };
+
+    const extractHoneypotField = (embedCode) => {
+      if (!embedCode) return '';
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(embedCode, 'text/html');
+      const honeypot = doc.querySelector('div[aria-hidden="true"]');
+      return honeypot ? honeypot.outerHTML : '';
+    };
+
+    // Set the form fields
+    setFormAction(extractFormAction(relevantForm.embedCode));
+    setHiddenFields(extractHiddenFields(relevantForm.embedCode));
+    setHoneypotField(extractHoneypotField(relevantForm.embedCode));
+
     setPopupContext([{
       popupEnabled: popup.popupEnabled,
       title: popup.popupTitle,
@@ -149,8 +145,8 @@ export default function NewsSlug(initialData) {
       image: popup.popupImage,
       signupForm: relevantForm
     }])
-  }, [signupForms, popup, initialData._id])
-
+  }, [signupForms, popup, initialData._id, relevantForm.embedCode])
+  
   let d = spacetime(date)
   let estimatedReadingTime = readingTime(toPlainText(content));
 
@@ -285,7 +281,7 @@ export default function NewsSlug(initialData) {
             </div>
             
             <div className="w-10/12 lg:w-8/12 max-w-2xl mx-auto mb-20 lg:mb-32">
-              <form action={extractFormAction(popupContext[0].signupForm.embedCode)} method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" className="validate w-full relative" target="_blank">
+              <form action={formAction} method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" className="validate w-full relative" target="_blank">
                 <div className="mc-field-group w-full">
                   <label htmlFor="mce-EMAIL" className="hidden">Email Address  <span className="inline">*</span></label>
                   <input type="email" placeholder="Email Address" name="EMAIL" className="required email w-full border border-blue border-opacity-50 rounded-full p-[12px] md:p-[14px] px-6 pr-[130px] pl-5 md:pl-6 md:pr-40 text-blue placeholder-blue placeholder-opacity-50" id="mce-EMAIL" required />
@@ -296,12 +292,10 @@ export default function NewsSlug(initialData) {
                 </div> 
 
                 {/* Honeypot field */}
-                <div dangerouslySetInnerHTML={{ 
-                  __html: extractHoneypotField(popupContext[0].signupForm.embedCode)
-                }} />  
+                <div dangerouslySetInnerHTML={{ __html: honeypotField }} />
 
                 {/* Insert hidden fields from the Mailchimp form */}
-                <div hidden="" dangerouslySetInnerHTML={{ __html: hiddenFields }} />
+                <div dangerouslySetInnerHTML={{ __html: hiddenFields }} />
 
                 <button type="submit" className={`rounded-full text-center font-bold px-8 md:px-[34px] py-[11px] bg-blue text-white ring-blue block group overflow-hidden transition-colors ease-in-out duration-500 z-10 absolute top-0 right-0 mt-1 mr-1 text-sm md:text-base`} name="subscribe" id="mc-embedded-subscribe">
                   <span className="block relative z-10">Sign Up</span>

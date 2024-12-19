@@ -30,20 +30,31 @@ export const getRelevantSignupForm = (signupForms, currentPageType, currentPageI
     return DEFAULT_SIGNUP_FORM;
   }
 
+  console.log("signupForms", signupForms)
+  console.log("currentPageType", currentPageType)
+  console.log("currentPageId", currentPageId)
+
   // Priority 1: Specific page match
   const specificPageForm = signupForms.find(form => 
     form.pageType === 'single' && 
     form.specificPage?.some(page => page._id === currentPageId)
   );
+
+  console.log("specificPageForm", specificPageForm)
+
   if (specificPageForm?.embedCode) {
     return specificPageForm;
   }
+
 
   // Priority 2: Page type match (all-case-studies, all-events, etc.)
   const mappedPageType = PAGE_TYPE_MAPPING[currentPageType];
   const pageTypeForm = signupForms.find(form => 
     form.pageType === mappedPageType
   );
+
+  console.log("pageTypeForm", pageTypeForm)
+
   if (pageTypeForm?.embedCode) {
     return pageTypeForm;
   }
