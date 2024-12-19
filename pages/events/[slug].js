@@ -111,13 +111,11 @@ export default function NewsSlug(initialData) {
 
     const extractHiddenFields = (embedCode) => {
       if (!embedCode) return '';
-      console.log("embedCode", embedCode)
       const parser = new DOMParser();
       const doc = parser.parseFromString(embedCode, 'text/html');
       const hiddenInputs = Array.from(doc.querySelectorAll('input[type="hidden"]'))
         .map(input => input.outerHTML)
         .join('');
-      console.log("hiddenInputs", hiddenInputs)
       return hiddenInputs;
     };
 
