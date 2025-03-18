@@ -80,40 +80,6 @@
   }
 }
 
-.team-image {
-  &:hover {
-    & .team-image--hover {
-      animation: teamImage 0.45s;
-      animation-iteration-count: 1;
-      animation-timing-function: steps(1, end);
-      animation-fill-mode: forwards;
-    }
-  }
-}
-
-.team-image--hover {
-  animation: teamImageReverse 0.45s;
-  animation-iteration-count: 1;
-  /* animation-play-state: paused; */
-  animation-timing-function: steps(1, end);
-  animation-fill-mode: forwards;
-}
-
-
-@keyframes teamImage {
-  0% { transform: translateX(0%); }
-  33% { transform: translateX(-14.285%); }
-  66% { transform: translateX(-28.57%); }
-  100% { transform: translateX(-42.855%); }
-}
-
-@keyframes teamImageReverse {
-  0% { transform: translateX(-42.855%); }
-  33% { transform: translateX(-28.57%); }
-  66% { transform: translateX(-14.285%); }
-  100% { transform: translateX(0%); }
-}
-
 .home-squiggle {
   margin-top: 20px;
 
