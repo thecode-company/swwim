@@ -15,6 +15,7 @@
     "body-scroll-lock": "^4.0.0-beta.0",
     "classnames": "^2.2.6",
     "conditional-wrap": "^1.0.0",
+    "critters": "^0.0.25",
     "embla-carousel": "^4.5.2",
     "eslint-config-next": "12",
     "framer-motion": "^3.10.0",
