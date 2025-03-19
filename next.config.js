@@ -6,6 +6,7 @@ module.exports = {
     return sanityRedirects;
   },
   images: {
+    formats: ['image/webp'],
     domains: ['placedog.net', 'cdn.sanity.io'],
   },
   experimental: {

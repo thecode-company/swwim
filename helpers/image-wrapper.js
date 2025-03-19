@@ -7,7 +7,8 @@ const customImageBuilder = (imageUrlBuilder, options, baseWidth, baseHeight, fil
   return ignoreCropping ? imageUrlBuilder.fit('clip') : imageUrlBuilder
     .size(baseWidth || options.originalImageDimensions.width, baseHeight || options.originalImageDimensions.height)
     .fit(fill ? 'fill' : 'clip')
-    .quality(95);
+    .quality(90)
+    .format('webp');
 };
 
 function ImageWrapper({ image, sizes, className, alt, baseWidth, baseHeight, noPlaceholder, fill, objectFit, ignoreCropping, priority, next, noFade }) {
