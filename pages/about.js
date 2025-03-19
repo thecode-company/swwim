@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Layout from '../components/layout'
-import Header from '../components/header'
 import Footer from '../components/footer'
+import Header from '../components/header'
 import Container from '../components/container'
 import { fade, fadeSmallDelay, revealInNoDelay, revealInLogoNoDelay, revealInLogoMoveNoDelay, textRevealSmallDelay } from "../helpers/transitions"
 import { motion } from 'framer-motion'

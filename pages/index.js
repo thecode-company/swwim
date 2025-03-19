@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useContext, useRef } from 'react';
 import Image from 'next/image'
 import Layout from '../components/layout'
-import Header from '../components/header'
 import Footer from '../components/footer'
+import Header from '../components/header'
 import Container from '../components/container'
 import { fade, fadeDelay, fadeSmallerDelay, revealIn, revealInLogo, revealInLogoMove, textReveal } from "../helpers/transitions"
 import Link from 'next/link'

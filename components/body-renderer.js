@@ -2,12 +2,13 @@ import BlockContentWrapper from './block-content-wrapper'
 import ImageCarousel from './image-carousel'
 import Quote from './quote'
 import StatBlock from './stat-block'
+import { getSerializers } from './serializers'
 
 const notImplemented = ({ type }) => <h1>Not implemented {type}</h1>
 
 const bodySerializers = {
   block: {
-    component: BlockContentWrapper,
+    component: (props) => <BlockContentWrapper {...props} serializers={blockSerializers} />,
     wrapper: ({ children }) => 
       <div className="mb-12 md:mb-16 xl:mb-24 bg-red-500">
         {children}
@@ -36,17 +37,7 @@ const bodySerializers = {
   }
 }
 
-function getSerializers() {
-  const res = {}
-  for (const [key, value] of Object.entries(bodySerializers)) {
-    if (key === 'block') continue
-    const Component = value.component
-    res[key] = (props) => <Component {...props.node} />
-  }
-  return res
-}
-
-export const blockSerializers = getSerializers()
+export const blockSerializers = getSerializers(bodySerializers)
 
 const BodyRenderer = ({ body }) => {
   if (!body) return <></>
