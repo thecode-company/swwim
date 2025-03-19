@@ -13,6 +13,7 @@ import LegalTabs from '../components/legal-tabs'
 import { getRelevantSignupForm } from '../components/signupForm';
 import { PopupContext } from '../contexts/popup'
 import { useRouter } from 'next/router'
+import { getRobotsFromSeo } from '../helpers/seo-utils'
 
 const query = `{
   _id,
@@ -58,17 +59,35 @@ const query = `{
         current
       }
     }
+  },
+  "seo": *[_type == "seo"][0] {
+    metaTitle,
+    metaDesc,
+    shareGraphic {
+      asset {
+        url
+      }
+    },
+    allowIndex,
+    advancedRobots {
+      allowFollow,
+      allowImageIndex,
+      allowArchive
+    }
   }
 }`
 
 const pageService = new SanityPageService(query)
 
 export default function Legal(initialData) {
-  const { data: { legal, contact, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
+  const { data: { legal, contact, popup, signupForms, seo }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
   const relevantForm = getRelevantSignupForm(signupForms, 'legal', legal._id);
+
+  // Get robots directives from SEO settings
+  const robotsProps = getRobotsFromSeo(seo)
 
   useEffect(() => {
     setPopupContext([{
@@ -87,11 +106,23 @@ export default function Legal(initialData) {
   return (
     <Layout>
       <NextSeo
-        title="Legal"
+        title={seo?.metaTitle}
+        description={seo?.metaDesc}
         canonical={canonicalUrl}
         openGraph={{
           url: canonicalUrl,
+          title: seo?.metaTitle,
+          description: seo?.metaDesc,
+          images: [
+            {
+              url: seo?.shareGraphic?.asset.url ?? '',
+              width: 1200,
+              height: 630,
+              alt: seo?.metaTitle,
+            },
+          ],
         }}
+        {...robotsProps}
       />
 
       <motion.div

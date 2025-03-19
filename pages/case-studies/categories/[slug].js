@@ -15,6 +15,7 @@ import ImageStandard from '../../../helpers/image-standard'
 import { useContext, useEffect } from 'react'
 import { PopupContext } from '../../../contexts/popup'
 import { useRouter } from 'next/router'
+import { getRobotsFromSeo } from '../../../helpers/seo-utils'
 
 const query = `{
   "cases": *[_type == "caseStudy"] | order(order asc) {
@@ -86,16 +87,39 @@ const query = `{
         current
       }
     }
-  }
-}`
+  },
+  "currentCat": *[_type == "caseCategory" && slug.current == $slug][0] {
+    title,
+    slug {
+      current
+    },
+    seo {
+      metaTitle,
+      metaDesc,
+      shareGraphic {
+        asset {
+          url
+        }
+      },
+      allowIndex,
+      advancedRobots {
+        allowFollow,
+        allowImageIndex,
+        allowArchive
+      }
+    }
+  },
+}
+`
 
 const pageService = new SanityPageService(query)
 
 export default function CaseStudiesLanding(initialData) {
-  const { data: { cases, contact, popup, services, currentService}  } = pageService.getPreviewHook(initialData)()
+  const { data: { cases, contact, popup, services, currentService, currentCat }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
+  const robotsProps = currentCat && getRobotsFromSeo(currentCat.seo) || {}
 
   const handleChange = event => {
     if (event.target.value == 'all') {
@@ -121,11 +145,23 @@ export default function CaseStudiesLanding(initialData) {
   return (
     <Layout>
       <NextSeo
-        title="Case Studies"
+        title={currentCat?.seo?.metaTitle || (currentCat ? `Case Studies - ${currentCat.title}` : "Case Studies")}
+        description={currentCat?.seo?.metaDesc}
         canonical={canonicalUrl}
         openGraph={{
           url: canonicalUrl,
+          title: currentCat?.seo?.metaTitle || (currentCat ? `Case Studies - ${currentCat.title}` : "Case Studies"),
+          description: currentCat?.seo?.metaDesc,
+          images: [
+            {
+              url: currentCat?.seo?.shareGraphic?.asset?.url ?? '',
+              width: 1200,
+              height: 630,
+              alt: currentCat?.seo?.metaTitle || (currentCat ? `Case Studies - ${currentCat.title}` : "Case Studies"),
+            },
+          ],
         }}
+        {...robotsProps}
       />
 
       <motion.div

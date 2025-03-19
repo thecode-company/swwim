@@ -16,6 +16,7 @@ import ImageStandard from '../../../helpers/image-standard'
 import { useRouter } from 'next/router'
 import { useContext, useEffect } from 'react'
 import { PopupContext } from '../../../contexts/popup'
+import { getRobotsFromSeo } from '../../../helpers/seo-utils'
 
 export const articlesPerPage = 50;
 
@@ -57,6 +58,21 @@ export const query = `{
     title,
     slug {
       current
+    },
+    seo {
+      metaTitle,
+      metaDesc,
+      shareGraphic {
+        asset {
+          url
+        }
+      },
+      allowIndex,
+      advancedRobots {
+        allowFollow,
+        allowImageIndex,
+        allowArchive
+      }
     }
   },
   "contact": *[_type == "contact"][0] {
@@ -112,6 +128,7 @@ export default function NewsCatSlug(initialData) {
 
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
+  const robotsProps = getRobotsFromSeo(currentCat?.seo)
 
   const handleChange = event => {
     if (event.target.value == 'all') {
@@ -123,11 +140,23 @@ export default function NewsCatSlug(initialData) {
   return (
     <Layout>
       <NextSeo
-        title="Latest Poolside"
+        title={currentCat.seo?.metaTitle || `News - ${currentCat.title}`}
+        description={currentCat.seo?.metaDesc}
         canonical={canonicalUrl}
         openGraph={{
           url: canonicalUrl,
+          title: currentCat.seo?.metaTitle || `News - ${currentCat.title}`,
+          description: currentCat.seo?.metaDesc,
+          images: [
+            {
+              url: currentCat.seo?.shareGraphic?.asset.url ?? '',
+              width: 1200,
+              height: 630,
+              alt: currentCat.seo?.metaTitle || `News - ${currentCat.title}`,
+            },
+          ],
         }}
+        {...robotsProps}
       />
 
       <motion.div

@@ -14,12 +14,21 @@ import SanityBlockContent from '@sanity/block-content-to-react'
 import { useContext, useEffect } from 'react'
 import { PopupContext } from '../../contexts/popup'
 import { useRouter } from 'next/router'
+import { getRobotsFromSeo } from '../../helpers/seo-utils'
 
 const query = `*[_type == "service" && slug.current == $slug][0]{
   seo {
     ...,
     shareGraphic {
       asset->
+    },
+    metaTitle,
+    metaDesc,
+    allowIndex,
+    advancedRobots {
+      allowFollow,
+      allowImageIndex,
+      allowArchive
     }
   },
   content,
@@ -66,6 +75,7 @@ export default function CaseStudySlug(initialData) {
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
+  const robotsProps = getRobotsFromSeo(seo)
 
   useEffect(() => {
     setPopupContext([{
@@ -83,19 +93,23 @@ export default function CaseStudySlug(initialData) {
   return (
     <Layout>
       <NextSeo
-        title={seo?.metaTitle ? seo?.metaTitle : title }
-        description={seo?.metaDesc ? seo?.metaDesc : about}
+        title={seo?.metaTitle || title}
+        description={seo?.metaDesc}
         canonical={canonicalUrl}
         openGraph={{
           url: canonicalUrl,
+          title: seo?.metaTitle || title,
+          description: seo?.metaDesc,
           images: [
             {
-              url: seo?.shareGraphic?.asset.url ?? null,
+              url: seo?.shareGraphic?.asset.url ?? '',
               width: 1200,
-              height: 630
+              height: 630,
+              alt: seo?.metaTitle || title,
             },
           ]
         }}
+        {...robotsProps}
       />
 
       <motion.div

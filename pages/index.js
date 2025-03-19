@@ -26,6 +26,7 @@ import { PopupContext } from '../contexts/popup'
 import ConditionalWrap from 'conditional-wrap';
 import { useRouter } from 'next/router';
 import { getRelevantSignupForm, DEFAULT_SIGNUP_FORM } from '../components/signupForm';
+import { getRobotsFromSeo } from '../helpers/seo-utils'
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -151,16 +152,32 @@ const query = `{
         current
       }
     }
-  }
+  },
+  "seo": *[_type == "seo"][0] {
+    metaTitle,
+    metaDesc,
+    shareGraphic {
+      asset {
+        url
+      }
+    },
+    allowIndex,
+    advancedRobots {
+      allowFollow,
+      allowImageIndex,
+      allowArchive
+    }
+  },
 }`
 
 const pageService = new SanityPageService(query)
 
 export default function Home(initialData) {
-  const { data: { home, services, clients, news, contact, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
+  const { data: { home, services, clients, news, contact, popup, signupForms, seo }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
+  const robotsProps = getRobotsFromSeo(seo)
 
   useEffect(() => {
     const relevantForm = getRelevantSignupForm(
@@ -211,20 +228,23 @@ export default function Home(initialData) {
   return (    
     <Layout>
       <NextSeo
-        title={home.seo?.metaTitle ? home.seo.metaTitle : home.title}
-        description={home.seo?.metaDesc ? home.seo.metaDesc : null}
+        title={seo?.metaTitle || "Homepage"}
+        description={seo?.metaDesc}
         canonical={canonicalUrl}
         openGraph={{
           url: canonicalUrl,
-          description: home.seo?.metaDesc ? home.seo.metaDesc : null,
+          title: seo?.metaTitle || "Homepage",
+          description: seo?.metaDesc,
           images: [
             {
-              url: home.seo?.shareGraphic?.asset.url ?? null,
+              url: seo?.shareGraphic?.asset.url ?? '',
               width: 1200,
-              height: 630
+              height: 630,
+              alt: seo?.metaTitle || "Homepage",
             },
           ]
         }}
+        {...robotsProps}
       />
 
       <motion.div

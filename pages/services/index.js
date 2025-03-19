@@ -16,6 +16,7 @@ import { getRelevantSignupForm } from '../../components/signupForm';
 import { PopupContext } from '../../contexts/popup'
 import { useContext, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { getRobotsFromSeo } from '../../helpers/seo-utils'
 
 const query = `{
   "services": *[_type == "service"] | order(order asc) {
@@ -67,17 +68,33 @@ const query = `{
         current
       }
     }
+  },
+  "seo": *[_type == "seo"][0] {
+    metaTitle,
+    metaDesc,
+    shareGraphic {
+      asset {
+        url
+      }
+    },
+    allowIndex,
+    advancedRobots {
+      allowFollow,
+      allowImageIndex,
+      allowArchive
+    }
   }
 }`
 
 const pageService = new SanityPageService(query)
 
 export default function ServicesLandingPage(initialData) {
-  const { data: { services, contact, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
+  const { data: { services, contact, popup, signupForms, seo } } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
   const relevantForm = getRelevantSignupForm(signupForms, 'services');
+  const robotsProps = getRobotsFromSeo(seo)
 
   useEffect(() => {
     setPopupContext([{
@@ -95,11 +112,23 @@ export default function ServicesLandingPage(initialData) {
   return (
     <Layout>
       <NextSeo
-        title="Services"
+        title={seo?.metaTitle}
+        description={seo?.metaDesc}
         canonical={canonicalUrl}
         openGraph={{
           url: canonicalUrl,
+          title: seo?.metaTitle,
+          description: seo?.metaDesc,
+          images: [
+            {
+              url: seo?.shareGraphic?.asset.url ?? '',
+              width: 1200,
+              height: 630,
+              alt: seo?.metaTitle,
+            },
+          ],
         }}
+        {...robotsProps}
       />
 
 

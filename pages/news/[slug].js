@@ -18,6 +18,7 @@ import { getRelevantSignupForm } from '../../components/signupForm';
 import { PopupContext } from '../../contexts/popup'
 import { useContext, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { getRobotsFromSeo } from '../../helpers/seo-utils'
 
 const readingTime = require('reading-time');
 
@@ -141,6 +142,7 @@ export default function NewsSlug(initialData) {
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
   const relevantForm = getRelevantSignupForm(signupForms, 'news', initialData._id);
+  const robotsProps = getRobotsFromSeo(seo)
 
   let d = spacetime(date)
   let estimatedReadingTime = readingTime(toPlainText(content));
@@ -164,19 +166,23 @@ export default function NewsSlug(initialData) {
   return (
     <Layout>
       <NextSeo
-        title={seo?.metaTitle ? seo?.metaTitle : title }
-        description={seo?.metaDesc ? seo?.metaDesc : introText}
+        title={seo?.metaTitle || title}
+        description={seo?.metaDesc}
         canonical={canonicalUrl}
         openGraph={{
           url: canonicalUrl,
+          title: seo?.metaTitle || title,
+          description: seo?.metaDesc,
           images: [
             {
-              url: seo?.shareGraphic?.asset.url ?? null,
+              url: seo?.shareGraphic?.asset.url || heroImage?.asset.url || '',
               width: 1200,
-              height: 630
+              height: 630,
+              alt: seo?.metaTitle || title,
             },
           ]
         }}
+        {...robotsProps}
       />
 
       <motion.div
