@@ -18,7 +18,7 @@ import { useContext, useEffect } from 'react'
 import { getRelevantSignupForm } from '../../components/signupForm';
 import { PopupContext } from '../../contexts/popup'
 import { useRouter } from 'next/router';
-import { getRobotsFromSeo } from '../../helpers/seo-utils'
+import { getRobotsFromSeo, getBreadcrumbsSchema, SchemaJsonLd } from '../../helpers/seo-utils'
 
 const query = `*[_type == "caseStudy" && slug.current == $slug][0]{
   _id,
@@ -160,6 +160,42 @@ export default function CaseStudySlug(initialData) {
     }])
   }, [signupForms, popup, initialData._id])
 
+  // Create schema data for case studies
+  const caseStudySchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    image: seo?.shareGraphic?.asset.url || images[0]?.asset.url || 'https://weswwim.com/images/social-share.jpg',
+    datePublished: seo?.datePublished || new Date().toISOString(),
+    description: about || '',
+    author: {
+      '@type': 'Organization',
+      name: 'Swwim',
+      url: 'https://www.weswwim.com/',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Swwim',
+      logo: {
+        '@type': 'ImageObject',
+        url: seo?.shareGraphic?.asset.url || images[0]?.asset.url || 'https://weswwim.com/images/social-share.jpg',
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://www.weswwim.com/case-studies/${slug.current}`,
+    },
+  };
+
+  // Create breadcrumbs data
+  const breadcrumbs = [
+    { name: 'Home', url: 'https://www.weswwim.com/' },
+    { name: 'Case Studies', url: 'https://www.weswwim.com/case-studies' },
+    { name: title, url: `https://www.weswwim.com/case-studies/${slug.current}` },
+  ];
+
+  const breadcrumbSchema = getBreadcrumbsSchema(breadcrumbs);
+
   return (
     <Layout>
       <NextSeo
@@ -181,6 +217,9 @@ export default function CaseStudySlug(initialData) {
         }}
         {...robotsProps}
       />
+
+      {/* Add Schema.org data */}
+      <SchemaJsonLd schemas={[caseStudySchema, breadcrumbSchema]} />
 
       <motion.div
         initial="initial"

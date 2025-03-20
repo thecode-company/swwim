@@ -18,7 +18,7 @@ import { getRelevantSignupForm } from '../../components/signupForm';
 import { PopupContext } from '../../contexts/popup'
 import { useContext, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { getRobotsFromSeo } from '../../helpers/seo-utils'
+import { getRobotsFromSeo, getArticleSchema, getBreadcrumbsSchema, SchemaJsonLd } from '../../helpers/seo-utils'
 
 const readingTime = require('reading-time');
 
@@ -163,6 +163,27 @@ export default function NewsSlug(initialData) {
     }])
   }, [signupForms, popup, initialData._id])
 
+  // Create the breadcrumbs data
+  const breadcrumbs = [
+    { name: 'Home', url: 'https://www.weswwim.com/' },
+    { name: 'News', url: 'https://www.weswwim.com/news' },
+    { name: title, url: `https://www.weswwim.com/news/${slug}` },
+  ];
+  
+  // Create article schema data
+  const articleData = {
+    title,
+    introText,
+    date,
+    image: heroImage?.asset?.url,
+    author,
+    url: `https://www.weswwim.com/news/${slug}`,
+  };
+  
+  // Generate schemas
+  const articleSchema = getArticleSchema(articleData);
+  const breadcrumbSchema = getBreadcrumbsSchema(breadcrumbs);
+
   return (
     <Layout>
       <NextSeo
@@ -184,6 +205,9 @@ export default function NewsSlug(initialData) {
         }}
         {...robotsProps}
       />
+      
+      {/* Add Schema.org data */}
+      <SchemaJsonLd schemas={[articleSchema, breadcrumbSchema]} />
 
       <motion.div
         initial="initial"

@@ -16,7 +16,7 @@ import { getRelevantSignupForm } from '../../components/signupForm';
 import { PopupContext } from '../../contexts/popup'
 import { useContext, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { getRobotsFromSeo } from '../../helpers/seo-utils'
+import { getRobotsFromSeo, getItemListSchema, SchemaJsonLd } from '../../helpers/seo-utils'
 
 const query = `{
   "services": *[_type == "service"] | order(order asc) {
@@ -96,6 +96,9 @@ export default function ServicesLandingPage(initialData) {
   const relevantForm = getRelevantSignupForm(signupForms, 'services');
   const robotsProps = getRobotsFromSeo(seo)
 
+  // Generate service list schema
+  const serviceListSchema = getItemListSchema(services, 'services');
+
   useEffect(() => {
     setPopupContext([{
       popupEnabled: popup.popupEnabled,
@@ -131,6 +134,8 @@ export default function ServicesLandingPage(initialData) {
         {...robotsProps}
       />
 
+      {/* Add Schema.org data */}
+      <SchemaJsonLd schemas={[serviceListSchema]} />
 
       <motion.div
         initial="initial"

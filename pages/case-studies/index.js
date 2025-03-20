@@ -16,7 +16,7 @@ import { useContext, useEffect } from 'react'
 import { getRelevantSignupForm } from '../../components/signupForm';
 import { PopupContext } from '../../contexts/popup'
 import { useRouter } from 'next/router'
-import { getRobotsFromSeo } from '../../helpers/seo-utils'
+import { getRobotsFromSeo, getItemListSchema, SchemaJsonLd } from '../../helpers/seo-utils'
 
 const query = `{
   "cases": *[_type == "caseStudy"] | order(order asc) {
@@ -130,6 +130,26 @@ export default function CaseStudiesLanding(initialData) {
     }])
   }, [signupForms, popup])
 
+  // Generate case studies list schema
+  const caseStudiesListSchema = getItemListSchema(cases, 'case-studies');
+
+  // Generate collection schema
+  const collectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Swwim Case Studies',
+    description: 'Explore our work and success stories - Social, Digital & Content Creation projects by Swwim',
+    url: 'https://www.weswwim.com/case-studies',
+    publisher: {
+      '@type': 'Organization',
+      name: 'Swwim',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://weswwim.com/images/social-share.jpg',
+      }
+    },
+  };
+
   return (
     <Layout>
       <NextSeo
@@ -151,6 +171,9 @@ export default function CaseStudiesLanding(initialData) {
         }}
         {...robotsProps}
       />
+
+      {/* Add Schema.org data */}
+      <SchemaJsonLd schemas={[caseStudiesListSchema, collectionSchema]} />
 
       <motion.div
         initial="initial"

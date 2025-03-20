@@ -26,7 +26,7 @@ import { PopupContext } from '../contexts/popup'
 import ConditionalWrap from 'conditional-wrap';
 import { useRouter } from 'next/router';
 import { getRelevantSignupForm, DEFAULT_SIGNUP_FORM } from '../components/signupForm';
-import { getRobotsFromSeo } from '../helpers/seo-utils'
+import { getRobotsFromSeo, getOrganizationSchema, SchemaJsonLd } from '../helpers/seo-utils'
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -225,6 +225,9 @@ export default function Home(initialData) {
     }
   };
 
+  // Generate schema
+  const orgSchema = getOrganizationSchema();
+
   return (    
     <Layout>
       <NextSeo
@@ -246,6 +249,9 @@ export default function Home(initialData) {
         }}
         {...robotsProps}
       />
+      
+      {/* Add Schema.org data */}
+      <SchemaJsonLd schemas={[orgSchema]} />
 
       <motion.div
         initial="initial"

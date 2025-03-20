@@ -19,6 +19,7 @@ import ImageStandard from '../helpers/image-standard'
 import { PopupContext } from '../contexts/popup'
 import { getRelevantSignupForm } from '../components/signupForm';
 import { useRouter } from 'next/router';
+import { getRobotsFromSeo, SchemaJsonLd } from '../helpers/seo-utils'
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -145,6 +146,29 @@ export default function About(initialData) {
     }
   };
 
+  // Create schema data for about page
+  const aboutPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'About Swwim',
+    description: about.introText || 'We specialise in influencer marketing, social media, content creation and copywriting. Our experience spans lifestyle, health and beauty and home and interiors.',
+    url: 'https://www.weswwim.com/about',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'Swwim',
+      url: 'https://www.weswwim.com',
+      logo: about.seo?.shareGraphic?.asset.url || 'https://weswwim.com/images/social-share.jpg',
+      description: about.introText || 'We specialise in influencer marketing, social media, content creation and copywriting.',
+      image: about.heroImageCarousell[0]?.asset.url || 'https://weswwim.com/images/social-share.jpg',
+      foundingDate: '2020', // You may want to adjust this
+      founders: team?.map(member => ({
+        '@type': 'Person',
+        name: `${member.firstName} ${member.secondName}`,
+        jobTitle: member.jobTitle,
+      })) || [],
+    }
+  };
+
   return (
     <Layout>
       <NextSeo
@@ -163,6 +187,9 @@ export default function About(initialData) {
           ]
         }}
       />
+
+      {/* Add Schema.org data */}
+      <SchemaJsonLd schemas={[aboutPageSchema]} />
 
       <motion.div
         initial="initial"

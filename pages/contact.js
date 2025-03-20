@@ -8,10 +8,32 @@ import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import ImageStandard from '../helpers/image-standard'
 import { useRouter } from 'next/router'
+import { getRobotsFromSeo, SchemaJsonLd } from '../helpers/seo-utils'
 
 export default function Contact() {
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
+
+  // Create schema data for contact page
+  const contactPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact Swwim',
+    description: 'Get in touch with Swwim - Social, Digital & Content Creation Agency',
+    url: 'https://www.weswwim.com/contact',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'Swwim',
+      telephone: contact?.phoneNumber || '',
+      email: contact?.email || '',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: contact?.address || '',
+      },
+      url: 'https://www.weswwim.com',
+      sameAs: contact?.socialLinks?.map(link => link.url) || [],
+    }
+  };
 
   return (
     <Layout>
@@ -22,6 +44,9 @@ export default function Contact() {
           url: canonicalUrl,
         }}
       />
+
+      {/* Add Schema.org data */}
+      <SchemaJsonLd schemas={[contactPageSchema]} />
 
       <motion.div
         initial="initial"

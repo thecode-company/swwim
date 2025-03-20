@@ -18,7 +18,7 @@ import { PopupContext } from '../../contexts/popup'
 import { getRelevantSignupForm } from '../../components/signupForm';
 import { useRouter } from 'next/router'
 import { toPlainText } from '../../helpers/text-helpers'
-import { getRobotsFromSeo } from '../../helpers/seo-utils'
+import { getRobotsFromSeo, getBreadcrumbsSchema, SchemaJsonLd } from '../../helpers/seo-utils'
 
 const readingTime = require('reading-time');
 
@@ -157,6 +157,44 @@ export default function NewsSlug(initialData) {
   let d = spacetime(date)
   let estimatedReadingTime = readingTime(toPlainText(content));
 
+  // Create event schema data
+  const eventSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: title,
+    description: introText || '',
+    image: heroImage?.asset?.url || 'https://weswwim.com/images/social-share.jpg',
+    startDate: d.unix,
+    endDate: d.unix,
+    location: {
+      '@type': location?.online ? 'VirtualLocation' : 'Place',
+      name: location?.name || '',
+      address: location?.online ? undefined : {
+        '@type': 'PostalAddress',
+        streetAddress: location?.address || '',
+      },
+      url: location?.online ? location?.url : undefined,
+    },
+    organizer: {
+      '@type': 'Organization',
+      name: 'Swwim',
+      url: 'https://www.weswwim.com',
+    },
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: location?.online 
+      ? 'https://schema.org/OnlineEventAttendanceMode'
+      : 'https://schema.org/OfflineEventAttendanceMode',
+  };
+
+  // Create breadcrumbs data
+  const breadcrumbs = [
+    { name: 'Home', url: 'https://www.weswwim.com/' },
+    { name: 'Events', url: 'https://www.weswwim.com/events' },
+    { name: title, url: `https://www.weswwim.com/events/${slug.current}` },
+  ];
+
+  const breadcrumbSchema = getBreadcrumbsSchema(breadcrumbs);
+
   return (
     <Layout>
       <NextSeo
@@ -178,6 +216,9 @@ export default function NewsSlug(initialData) {
         }}
         {...robotsProps}
       />
+
+      {/* Add Schema.org data */}
+      <SchemaJsonLd schemas={[eventSchema, breadcrumbSchema]} />
 
       <motion.div
         initial="initial"
