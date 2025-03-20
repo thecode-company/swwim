@@ -39,6 +39,7 @@
     "react-lottie": "^1.2.3",
     "react-tabs": "^3.2.2",
     "reading-time": "^1.4.0",
+    "sharp": "^0.33.5",
     "spacetime": "^6.16.1"
   },
   "devDependencies": {
