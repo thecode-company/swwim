@@ -9,8 +9,34 @@ import { NextSeo } from 'next-seo'
 import ImageStandard from '../helpers/image-standard'
 import { useRouter } from 'next/router'
 import { getRobotsFromSeo, SchemaJsonLd } from '../helpers/seo-utils'
+import SanityPageService from '../services/sanityPageService'
 
-export default function Contact() {
+const query = `{
+  "contact": *[_type == "contact"][0] {
+    title,
+    email,
+    phoneNumber,
+    address,
+    socialLinks[] {
+      title,
+      url
+    }
+  },
+  "seo": *[_type == "seo"][0] {
+    metaTitle,
+    metaDesc,
+    shareGraphic {
+      asset {
+        url
+      }
+    }
+  }
+}`
+
+const pageService = new SanityPageService(query)
+
+export default function Contact(initialData) {
+  const { data: { contact, seo } } = pageService.getPreviewHook(initialData)()
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
 
@@ -163,4 +189,8 @@ export default function Contact() {
       </motion.section>
     </Layout>
   )
+}
+
+export async function getStaticProps(context) {
+  return pageService.fetchQuery(context)
 }

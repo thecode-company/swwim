@@ -3,7 +3,7 @@ import SanityPageService from '../../services/sanityPageService'
 import NewsBody, { query, articlesPerPage } from '../../components/news-body';
 import { useRouter } from 'next/router'
 import { getRobotsFromSeo, getItemListSchema, SchemaJsonLd } from '../../helpers/seo-utils'
-import { Layout } from '../../components/layout'
+import Layout from '../../components/layout'
 import { NextSeo } from 'next-seo'
 
 const pageService = new SanityPageService(query)

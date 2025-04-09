@@ -30,6 +30,19 @@ const query = `{
       current
     }
   },
+  "servicesPage": *[_type == "servicesPage"][0] {
+    title,
+    heading,
+    contentLine1,
+    contentLine2,
+    contentLine3,
+    contentLine4,
+    ctaButton {
+      text,
+      url
+    },
+    seo
+  },
   "contact": *[_type == "contact"][0] {
     title,
     email,
@@ -89,12 +102,12 @@ const query = `{
 const pageService = new SanityPageService(query)
 
 export default function ServicesLandingPage(initialData) {
-  const { data: { services, contact, popup, signupForms, seo } } = pageService.getPreviewHook(initialData)()
+  const { data: { services, servicesPage, contact, popup, signupForms, seo } } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
   const relevantForm = getRelevantSignupForm(signupForms, 'services');
-  const robotsProps = getRobotsFromSeo(seo)
+  const robotsProps = getRobotsFromSeo(servicesPage?.seo || seo)
 
   // Generate service list schema
   const serviceListSchema = getItemListSchema(services, 'services');
@@ -115,19 +128,19 @@ export default function ServicesLandingPage(initialData) {
   return (
     <Layout>
       <NextSeo
-        title={seo?.metaTitle}
-        description={seo?.metaDesc}
+        title={servicesPage?.seo?.metaTitle || servicesPage?.title || "Services"}
+        description={servicesPage?.seo?.metaDesc}
         canonical={canonicalUrl}
         openGraph={{
           url: canonicalUrl,
-          title: seo?.metaTitle,
-          description: seo?.metaDesc,
+          title: servicesPage?.seo?.metaTitle || servicesPage?.title || "Services",
+          description: servicesPage?.seo?.metaDesc,
           images: [
             {
-              url: seo?.shareGraphic?.asset.url ?? '',
+              url: servicesPage?.seo?.shareGraphic?.asset.url ?? '',
               width: 1200,
               height: 630,
-              alt: seo?.metaTitle,
+              alt: servicesPage?.seo?.metaTitle || servicesPage?.title || "Services",
             },
           ],
         }}
@@ -200,11 +213,15 @@ export default function ServicesLandingPage(initialData) {
                 </div>
 
                 <div className="relative">
-                  <h1 className="block md:hidden font-display text-[9.7vw] md:text-[6.45vw] lg:text-[5.75vw] 2xl:text-[80px] leading-none relative z-10 text-center">Making waves in digital</h1>
+                  <h1 className="block md:hidden font-display text-[9.7vw] md:text-[6.45vw] lg:text-[5.75vw] 2xl:text-[80px] leading-none relative z-10 text-center">
+                    {servicesPage?.heading || "Making waves in digital"}
+                  </h1>
 
                   <h1 className="hidden md:block font-display text-[9.7vw] md:text-[6.45vw] lg:text-[5.75vw] 2xl:text-[80px] leading-none relative z-10 text-center">
                     <span className="block overflow-hidden">
-                      <motion.span variants={textRevealSmallDelay} className="block">Making waves in digital</motion.span>
+                      <motion.span variants={textRevealSmallDelay} className="block">
+                        {servicesPage?.heading || "Making waves in digital"}
+                      </motion.span>
                     </span>
                   </h1>
                   
@@ -248,7 +265,7 @@ export default function ServicesLandingPage(initialData) {
 
               <span className="font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10 flex items-center">
                 <span className="block">
-                  See How We
+                  {servicesPage?.contentLine1 || "See How We"}
                 </span>
                 {/* <div className="w-[13%] xl:w-[11%] mr-l md:ml-[2%] 2xl:ml-[4%] xl:mb-[-2%] hidden md:block animate--float">
                   <ImageStandard width={130} height={115} layout="responsive" src="/icons/speech.svg" alt="Speech Bubble Illustration" className="w-full" />
@@ -263,20 +280,26 @@ export default function ServicesLandingPage(initialData) {
                   <ImageStandard width={157} height={134} layout="responsive" src="/icons/camera-coloured.svg" alt="Camera Illustration" className="w-full" />
                 </div>
                 <span className="block">
-                  Can Help Your
+                  {servicesPage?.contentLine2 || "Can Help Your"}
                 </span>
               </span>
-              <span className="block font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10">Business Grow</span>
+              <span className="block font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10">
+                {servicesPage?.contentLine3 || "Business Grow"}
+              </span>
 
               <div className="w-[32%] mr-3 md:mr-[4%] 2xl:mr-12 block absolute bottom-0 left-0 z-10 -mb-2 xl:mb-0">
                 <ImageStandard width={364} height={181} layout="responsive" src="/icons/case-woman.svg" alt="Woman Illustration" className="w-full" />
               </div>
               
-              <span className="block font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10 ml-[35%]">Today</span>
+              <span className="block font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10 ml-[35%]">
+                {servicesPage?.contentLine4 || "Today"}
+              </span>
               
-              <Link href="/contact">
+              <Link href={servicesPage?.ctaButton?.url || "/contact"}>
                 <a className={`rounded-full text-center inline-block font-bold group overflow-hidden transition-colors ease-in-out duration-500 bg-blue text-white ring-blue px-4 md:px-6 py-4 md:py-6 relative xl:absolute xl:bottom-0 xl:right-0 w-full xl:w-[30%] text-base md:text-2xl xl:text-[1.9vw] mt-5 xl:mt-0 xl:mb-6 xl:max-w-[360px]`}>
-                  <span className="block relative z-10 xl:mb-2">Contact us</span>
+                  <span className="block relative z-10 xl:mb-2">
+                    {servicesPage?.ctaButton?.text || "Contact us"}
+                  </span>
                   <div className="absolute bottom-0 left-0 w-full h-0 bg-blue-dark group-hover:h-full group-focus:h-full transition-all ease-in-out duration-500 z-0"></div>
                 </a>
               </Link>

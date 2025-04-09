@@ -33,8 +33,13 @@ const query = `{
       }
     },
     title,
+    headingLine1,
+    headingLine2,
+    headingLine3,
     introText,
     values,
+    teamSectionHeading,
+    instagramSectionHeading,
     heroImageCarousell[] {
       asset->,
       video {
@@ -146,6 +151,10 @@ export default function About(initialData) {
     }
   };
 
+  const concatenateHeading = (line1, line2, line3) => {
+    return [line1, line2, line3].filter(Boolean).join(' ');
+  };
+
   // Create schema data for about page
   const aboutPageSchema = {
     '@context': 'https://schema.org',
@@ -239,17 +248,17 @@ export default function About(initialData) {
               </div>
 
               <div className="relative">
-                <h1 className="font-display uppercase text-[9.7vw] md:text-[6.45vw] lg:text-[5.75vw] 2xl:text-[80px] leading-none relative z-10 text-center block md:hidden">It's our job to build a community that's right for your brand</h1>
+                <h1 className="font-display uppercase text-[9.7vw] md:text-[6.45vw] lg:text-[5.75vw] 2xl:text-[80px] leading-none relative z-10 text-center block md:hidden">{concatenateHeading(about.headingLine1, about.headingLine2, about.headingLine3) || "It's our job to build a community that's right for your brand"}</h1>
 
                 <h1 className="hidden font-display uppercase text-[9.7vw] md:text-[6.45vw] lg:text-[5.75vw] 2xl:text-[80px] leading-none relative z-10 text-center md:block">
                   <span className="block overflow-hidden">
-                    <motion.span variants={textRevealSmallDelay} className="block">It's our job to build a</motion.span>
+                    <motion.span variants={textRevealSmallDelay} className="block">{about.headingLine1 || "It's our job to build a"}</motion.span>
                   </span>
                   <span className="block overflow-hidden">
-                  <motion.span variants={textRevealSmallDelay} className="block">community that's</motion.span>
+                  <motion.span variants={textRevealSmallDelay} className="block">{about.headingLine2 || "community that's"}</motion.span>
                   </span>
                   <span className="block overflow-hidden">
-                  <motion.span variants={textRevealSmallDelay} className="block">right for your brand</motion.span>
+                  <motion.span variants={textRevealSmallDelay} className="block">{about.headingLine3 || "right for your brand"}</motion.span>
                   </span>
                 </h1>
                 
@@ -325,7 +334,7 @@ export default function About(initialData) {
                   <span className="block animate--letter-float--delay">a</span>
                   <span className="block animate--letter-float">m</span>
                 </span>
-                <h3 className="text-3xl md:text-5xl 2xl:text-6xl font-display uppercase mb-0 pb-0 text-center">Problem solvers with passion</h3>
+                <h3 className="text-3xl md:text-5xl 2xl:text-6xl font-display uppercase mb-0 pb-0 text-center">{ about.teamSectionHeading || "Problem solvers with passion" }</h3>
                 
                 <div className="w-full ml-auto mr-[-8vw] md:mr-[-2vw] 2xl:mr-[-6vw]">
                   <ImageStandard width={268} height={4} layout="responsive" src="/icons/team-stroke.svg" alt="Swipe Underline" className="w-full will-change" />
@@ -560,7 +569,7 @@ export default function About(initialData) {
                   </span>
                 </div>
 
-                <span className="text-center block uppercase text-4xl md:text-5xl xl:text-6xl font-display mb-4 md:mb-6">Soak up the latest</span>
+                <span className="text-center block uppercase text-4xl md:text-5xl xl:text-6xl font-display mb-4 md:mb-6">{ about.instagramSectionHeading || "Soak up the latest" }</span>
 
                 <div className="mx-auto flex justify-center">
                   <a href="https://www.instagram.com/weswwim" target="_blank" rel="noopener noreferrer" className={`rounded-full text-center inline-block font-bold group relative overflow-hidden transition-colors ease-in-out duration-500 bg-blue text-white px-5 md:px-8 py-3 md:py-4 font-display text-lg`}>

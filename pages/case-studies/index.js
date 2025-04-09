@@ -35,6 +35,19 @@ const query = `{
       current
     }
   },
+  "caseStudiesPage": *[_type == "caseStudiesPage"][0] {
+    title,
+    heading,
+    contentLine1,
+    contentLine2,
+    contentLine3,
+    contentLine4,
+    ctaButton {
+      text,
+      url
+    },
+    seo
+  },
   "services": *[_type == "service"] | order(order asc) {
     title,
     slug {
@@ -100,11 +113,11 @@ const query = `{
 const pageService = new SanityPageService(query)
 
 export default function CaseStudiesLanding(initialData) {
-  const { data: { cases, contact, popup, services, signupForms, seo }  } = pageService.getPreviewHook(initialData)()
+  const { data: { cases, caseStudiesPage, contact, popup, services, signupForms, seo }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
-  const robotsProps = getRobotsFromSeo(seo)
+  const robotsProps = getRobotsFromSeo(caseStudiesPage?.seo || seo)
 
   const handleChange = event => {
     if (event.target.value == 'all') {
@@ -153,19 +166,19 @@ export default function CaseStudiesLanding(initialData) {
   return (
     <Layout>
       <NextSeo
-        title={seo?.metaTitle || "Case Studies"}
-        description={seo?.metaDesc}
+        title={caseStudiesPage?.seo?.metaTitle || caseStudiesPage?.title || "Case Studies"}
+        description={caseStudiesPage?.seo?.metaDesc}
         canonical={canonicalUrl}
         openGraph={{
           url: canonicalUrl,
-          title: seo?.metaTitle || "Case Studies",
-          description: seo?.metaDesc,
+          title: caseStudiesPage?.seo?.metaTitle || caseStudiesPage?.title || "Case Studies",
+          description: caseStudiesPage?.seo?.metaDesc,
           images: [
             {
-              url: seo?.shareGraphic?.asset.url ?? '',
+              url: caseStudiesPage?.seo?.shareGraphic?.asset.url ?? '',
               width: 1200,
               height: 630,
-              alt: seo?.metaTitle || "Case Studies",
+              alt: caseStudiesPage?.seo?.metaTitle || caseStudiesPage?.title || "Case Studies",
             },
           ],
         }}
@@ -242,11 +255,13 @@ export default function CaseStudiesLanding(initialData) {
                 </div>
 
                 <div className="relative">
-                  <h1 className="block md:hidden font-display uppercase text-[9.7vw] md:text-[6.45vw] lg:text-[5.75vw] 2xl:text-[80px] leading-none relative z-10 text-center">10's across the board</h1>
+                  <h1 className="block md:hidden font-display uppercase text-[9.7vw] md:text-[6.45vw] lg:text-[5.75vw] 2xl:text-[80px] leading-none relative z-10 text-center">
+                    {caseStudiesPage?.heading || "10's across the board"}
+                  </h1>
 
                   <h1 className="hidden md:block font-display uppercase text-[9.7vw] md:text-[6.45vw] lg:text-[5.75vw] 2xl:text-[80px] leading-none relative z-10 text-center">
                     <span className="block overflow-hidden">
-                      <motion.span variants={textRevealSmallDelay} className="block">10's across the board</motion.span>
+                      <motion.span variants={textRevealSmallDelay} className="block">{caseStudiesPage?.heading || "10's across the board"}</motion.span>
                     </span>
                   </h1>
                   
@@ -303,7 +318,7 @@ export default function CaseStudiesLanding(initialData) {
 
               <span className="font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10 flex items-center">
                 <span className="block">
-                  See How We
+                  {caseStudiesPage?.contentLine1 || "See How We"}
                 </span>
                 {/* <div className="w-[13%] xl:w-[11%] mr-l md:ml-[2%] 2xl:ml-[4%] xl:mb-[-2%] hidden md:block animate--float">
                   <ImageStandard width={130} height={115} layout="responsive" src="/icons/speech.svg" alt="Speech Bubble Illustration" className="w-full" />
@@ -318,20 +333,26 @@ export default function CaseStudiesLanding(initialData) {
                   <ImageStandard width={157} height={134} layout="responsive" src="/icons/camera-coloured.svg" alt="Camera Illustration" className="w-full" />
                 </div>
                 <span className="block">
-                  Can Help Your
+                  {caseStudiesPage?.contentLine2 || "Can Help Your"}
                 </span>
               </span>
-              <span className="block font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10">Business Grow</span>
+              <span className="block font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10">
+                {caseStudiesPage?.contentLine3 || "Business Grow"}
+              </span>
 
               <div className="w-[32%] mr-3 md:mr-[4%] 2xl:mr-12 block absolute bottom-0 left-0 z-10 -mb-2 xl:mb-0">
                 <ImageStandard width={364} height={181} layout="responsive" src="/icons/case-woman.svg" alt="Woman Illustration" className="w-full" />
               </div>
               
-              <span className="block font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10 ml-[35%]">Today</span>
+              <span className="block font-display uppercase text-[10.5vw] md:text-[8.5vw] 2xl:text-[125px] leading-none relative z-10 ml-[35%]">
+                {caseStudiesPage?.contentLine4 || "Today"}
+              </span>
               
-              <Link href="/contact">
+              <Link href={caseStudiesPage?.ctaButton?.url || "/contact"}>
                 <a className={`rounded-full text-center inline-block font-bold group overflow-hidden transition-colors ease-in-out duration-500 bg-blue text-white ring-blue px-4 md:px-6 py-4 md:py-6 relative xl:absolute xl:bottom-0 xl:right-0 w-full xl:w-[30%] text-base md:text-2xl xl:text-[1.9vw] mt-5 xl:mt-0 xl:mb-6 xl:max-w-[360px]`}>
-                  <span className="block relative z-10 xl:mb-2">Contact us</span>
+                  <span className="block relative z-10 xl:mb-2">
+                    {caseStudiesPage?.ctaButton?.text || "Contact us"}
+                  </span>
                   <div className="absolute bottom-0 left-0 w-full h-0 bg-blue-dark group-hover:h-full group-focus:h-full transition-all ease-in-out duration-500 z-0"></div>
                 </a>
               </Link>
