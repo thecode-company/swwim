@@ -105,19 +105,19 @@ const NewsTeaser = React.forwardRef(({href, heading, noBorder, image, author, th
               </div>
               {author && (
                 <span className="font-display ml-auto flex flex-wrap items-center order-1 md:order-2 md:mb-0">
-                <span className="block">By {author.firstName}</span>
-                {author.image && (
-                  <div className="w-10 h-10 rounded-full border-white border-2 ml-3">
-                    <ImageWrapper
-                      image={author.image.asset}
-                      className="rounded-full will-change object-cover object-left"
-                      baseWidth={350}
-                      baseHeight={350}
-                      alt={author.name}
-                    />
-                  </div>
-                )}
-              </span>
+                  <span className="block">By {author.firstName}</span>
+                  {(author._type === "team" ? author?.imageAuthor : author?.image) && (
+                    <div className="w-10 h-10 rounded-full border-white border-2 ml-3">
+                      <ImageWrapper
+                        image={author._type === "team" ? author.imageAuthor.asset : author.image.asset}
+                        className="rounded-full will-change object-cover object-left"
+                        baseWidth={350}
+                        baseHeight={350}
+                        alt={author.name}
+                      />
+                    </div>
+                  )}
+                </span>
               )}
             </div>
           </div>

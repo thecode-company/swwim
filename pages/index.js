@@ -100,6 +100,7 @@ const query = `{
     },
     content,
     author-> {
+      _type,
       firstName,
       image {
         asset -> {

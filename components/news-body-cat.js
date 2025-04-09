@@ -32,8 +32,14 @@ export const query = `{
     },
     date,
     author-> {
+      _type,
       firstName,
       image {
+        asset -> {
+          ...
+        }
+      },
+      imageAuthor {
         asset -> {
           ...
         }

@@ -45,12 +45,14 @@ const query = `
     },
     content,
     author-> {
+      _type,
       firstName,
       lastName,
       image {
-        asset -> {
-          ...
-        }
+        asset->
+      },
+      imageAuthor {
+        asset->
       }
     },
     date,
@@ -269,10 +271,10 @@ export default function NewsSlug(initialData) {
                     <span className="block lg:inline-block align-middle mt-2 lg:mt-0 lg:ml-6">
                       <span className="font-display md:ml-auto flex flex-wrap items-center order-1 md:order-2 mb-3 md:mb-0 text-base">
                         <span className="block">By {author.firstName}</span>
-                        { author.image && (
+                        { (author._type === "team" ? author?.imageAuthor : author?.image) && (
                           <div className="w-10 h-10 rounded-full border-white border-2 ml-3">
                             <ImageWrapper
-                              image={author.image.asset}
+                              image={author._type === "team" ? author.imageAuthor : author.image}
                               className="rounded-full"
                               baseWidth={350}
                               baseHeight={350}
@@ -411,10 +413,10 @@ export default function NewsSlug(initialData) {
                 { author && (
                   <span className="font-display ml-auto flex flex-wrap items-center mb-0">
                     <span className="block">By {author.firstName}</span>
-                    { author.image && (
+                    { (author._type === "team" ? author?.imageAuthor : author?.image) && (
                       <div className="w-10 h-10 rounded-full border-white border-2 ml-3">
                         <ImageWrapper
-                          image={author.image.asset}
+                          image={author._type === "team" ? author.imageAuthor : author.image}
                           className="rounded-full"
                           baseWidth={350}
                           baseHeight={350}

@@ -70,10 +70,10 @@ export default function NewsTeaserStacked({ heading, author, theme, supporting, 
               {author && (
                 <span className="text-sm md:text-base font-display flex flex-wrap items-center">
                   <span className="block">By {author.firstName}</span>
-                  {author.image && (
+                  {(author._type === "team" ? author?.imageAuthor : author?.image) && (
                   <div className="w-10 h-10 rounded-full border-white border-2 ml-3 relative">
                     <ImageWrapper
-                      image={author.image.asset}
+                      image={author._type === "team" ? author.imageAuthor.asset : author.image.asset}
                       className="rounded-full will-change object-cover object-left absolute inset-0"
                       baseWidth={350}
                       baseHeight={350}
