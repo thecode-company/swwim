@@ -96,8 +96,9 @@ const query = `
 const pageService = new SanityPageService(query)
 
 export default function NewsSlug(initialData) {
-  const { data: { seo, heroImage, date, location, time, introText, title, content, newsletterSignupHeading, newsletterSignupText, contact, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
   const router = useRouter();
+  const { slug } = router.query;
+  const { data: { seo, heroImage, date, location, time, introText, title, content, newsletterSignupHeading, newsletterSignupText, contact, popup, signupForms }  } = pageService.getPreviewHook(initialData)()
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
   const relevantForm = getRelevantSignupForm(signupForms, 'events', initialData._id);
   const robotsProps = getRobotsFromSeo(seo)
@@ -190,7 +191,7 @@ export default function NewsSlug(initialData) {
   const breadcrumbs = [
     { name: 'Home', url: 'https://www.weswwim.com/' },
     { name: 'Events', url: 'https://www.weswwim.com/events' },
-    { name: title, url: `https://www.weswwim.com/events/${slug.current}` },
+    { name: title, url: `https://www.weswwim.com/events/${typeof slug === 'object' ? slug.current : slug}` },
   ];
 
   const breadcrumbSchema = getBreadcrumbsSchema(breadcrumbs);
@@ -375,6 +376,7 @@ export default function NewsSlug(initialData) {
 }
 
 export async function getStaticProps(context) {
+  const { slug } = context.params;
   return pageService.fetchQuery(context)
 }
 

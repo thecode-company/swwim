@@ -74,6 +74,7 @@ export default function CaseStudySlug(initialData) {
   const { data: { seo, title, about, images, content, slug, clients, contact, popup }  } = pageService.getPreviewHook(initialData)()
   const [popupContext, setPopupContext] = useContext(PopupContext);
   const router = useRouter();
+  const { slug: routerSlug } = router.query;
   const canonicalUrl = `https://www.weswwim.com${router.asPath}`;
   const robotsProps = getRobotsFromSeo(seo)
 
@@ -113,7 +114,7 @@ export default function CaseStudySlug(initialData) {
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://www.weswwim.com/case-studies/${slug.current}`,
+      '@id': `https://www.weswwim.com/case-studies/${typeof slug === 'object' ? slug.current : slug}`,
     },
   };
 
@@ -121,7 +122,7 @@ export default function CaseStudySlug(initialData) {
   const breadcrumbs = [
     { name: 'Home', url: 'https://www.weswwim.com/' },
     { name: 'Case Studies', url: 'https://www.weswwim.com/case-studies' },
-    { name: title, url: `https://www.weswwim.com/case-studies/${slug.current}` },
+    { name: title, url: `https://www.weswwim.com/case-studies/${typeof slug === 'object' ? slug.current : slug}` },
   ];
 
   const breadcrumbSchema = getBreadcrumbsSchema(breadcrumbs);
@@ -270,7 +271,15 @@ export default function CaseStudySlug(initialData) {
 }
 
 export async function getStaticProps(context) {
-  return pageService.fetchQuery(context)
+  const { slug } = context.params;
+  const result = await pageService.fetchQuery(context)
+  
+  // If we get an object with slug.current, standardize to just the string
+  if (result.props.slug && typeof result.props.slug === 'object' && result.props.slug.current) {
+    result.props.slug = result.props.slug.current
+  }
+  
+  return result
 }
 
 export async function getStaticPaths() {
